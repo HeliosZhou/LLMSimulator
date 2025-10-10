@@ -98,7 +98,6 @@ bool Cluster::checkMemorySize() {
   int num_heads = device->model_config.num_heads;
   int expert_intermediate_dim = device->model_config.expert_intermediate_dim;
 
-
   long long activation_size = 0;
   if(config.decode_mode){
     if(device->model_config.use_absorb){
@@ -120,6 +119,28 @@ bool Cluster::checkMemorySize() {
         // MoE FFN
         (num_routed_expert_per_device + device->model_config.num_shared_expert) * // routed + shared
         ((expert_batch_size * 2.0 * expert_intermediate_dim) + // gate proj out + silu out
+        (expert_batch_size * expert_intermediate_dim) + // up proj out
+        (expert_batch_size * hidden_dim))) * // down proj out) 
+        device->model_config.precision_byte;
+    }
+    else if(device->model_config.compressed_kv){ // base w/ compressed kv
+      activation_size =
+        ((batch_size_per_dp * hidden_dim) + // input seqeunces (or tokens)
+        (batch_size_per_dp * q_lora_rank) + // c_q
+        (batch_size_per_dp * kv_lora_rank) + // c_kv
+        (batch_size_per_dp * qk_rope_head_dim) + // kr
+
+        (batch_size_per_dp * (3.0 * qk_rope_head_dim + head_dim) * num_heads / ne_tp_dg) + // query + rope out + cos/sin
+        (batch_size_per_dp * 2.0 * total_len * head_dim * num_heads / ne_tp_dg) + // kv
+
+        (batch_size_per_dp * 2.0 * total_len * num_heads / ne_tp_dg) + // attn score out
+        (batch_size_per_dp * num_heads * head_dim / ne_tp_dg) + // attn context out
+
+        (batch_size_per_dp * hidden_dim) + // out proj out
+
+        // MoE FFN
+        (num_routed_expert_per_device + device->model_config.num_shared_expert) * // routed + shared
+        (2.0 * (expert_batch_size * expert_intermediate_dim) + // gate proj out + silu out
         (expert_batch_size * expert_intermediate_dim) + // up proj out
         (expert_batch_size * hidden_dim))) * // down proj out) 
         device->model_config.precision_byte;
@@ -802,6 +823,7 @@ void Cluster::setTimeBreakDown(Stat &stat) {
     stat.Attn_COMP_energy = Attn_COMP;
     stat.MoE_DRAM_energy = MoE_DRAM;
     stat.MoE_COMP_energy = MoE_COMP;
+    stat.isOOM = out_of_memory;    
     
     double opb = 0;
     for (auto stamp : AttnSum) {

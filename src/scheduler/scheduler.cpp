@@ -141,7 +141,7 @@ int Scheduler::getRandomExpertSeqId() {
 std::set<int> Scheduler::getRandomExpert(int top_k) {
   static unsigned int seed = 777;
   static std::mt19937 generator(seed);
-  static std::uniform_int_distribution<int> distribution(0, 256);
+  static std::uniform_int_distribution<int> distribution(0, model_config.num_routed_expert - 1);
 
   std::set<int> route;
 
