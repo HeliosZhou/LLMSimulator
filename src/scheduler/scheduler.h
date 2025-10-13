@@ -58,6 +58,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
 
   // random
   std::set<int> getRandomExpert(int top_k);
+  std::set<int> getZipfianRandomExpert(std::vector<double> skewness_weight, int top_k);
   std::set<int> getEquallyDistributedExpert(int token_id, int top_k);
   int getRandomExpertSeqId();
   static double getNormaldistribution();

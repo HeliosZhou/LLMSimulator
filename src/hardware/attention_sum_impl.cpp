@@ -706,8 +706,8 @@ ExecStatus MultiLatentAttentionSumExecutionGPU(Device_Ptr device,
       int block_size_r = std::min((shared_mem_size / (4 * k * input->precision_byte)), static_cast<double>(k)); // num_rows, B_r
       int block_size_c = shared_mem_size / (4 * k * input->precision_byte);
 
-      int num_tile_r = m / block_size_r;
-      int num_tile_c = m / block_size_c;
+      int num_tile_r = (m + block_size_r - 1)/ block_size_r;
+      int num_tile_c = (m + block_size_c - 1) / block_size_c;
 
       int q_i = block_size_r * (head_dim + qk_rope_head_dim);
       int k_i = block_size_c * (head_dim + qk_rope_head_dim);
@@ -1171,8 +1171,8 @@ ExecStatus MultiLatentAttentionSumExecutionLogic(Device_Ptr device,
       int block_size_r = shared_mem_size / (4 * k * input->precision_byte); // num_rows
       int block_size_c = k;  // num_rows
 
-      int num_tile_r = m / block_size_r;
-      int num_tile_c = m / block_size_c;
+      int num_tile_r = (m + block_size_r - 1) / block_size_r;
+      int num_tile_c = (m + block_size_c - 1) / block_size_c;
 
       int q_i = block_size_r * (head_dim + qk_rope_head_dim);
       int k_i = block_size_c * (head_dim + qk_rope_head_dim);
@@ -1637,8 +1637,8 @@ ExecStatus MultiLatentAttentionSumExecutionPIM(Device_Ptr device,
       int block_size_r = shared_mem_size / (4 * k * input->precision_byte); // num_rows
       int block_size_c = k;  // num_rows
 
-      int num_tile_r = m / block_size_r;
-      int num_tile_c = m / block_size_c;
+      int num_tile_r = (m + block_size_r - 1) / block_size_r;
+      int num_tile_c = (m + block_size_c - 1) / block_size_c;
 
       int q_i = block_size_r * (head_dim + qk_rope_head_dim);
       int k_i = block_size_c * (head_dim + qk_rope_head_dim);

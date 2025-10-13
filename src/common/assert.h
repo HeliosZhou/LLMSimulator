@@ -1,5 +1,5 @@
 #pragma once
-
+#include <filesystem>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -7,6 +7,7 @@
 // always fail
 inline void fail(const std::string &msg) {
   std::cerr << "ERROR: " << msg << std::endl << std::flush;
+  std::cout << std::filesystem::current_path() << std::endl;
   std::exit(EXIT_FAILURE);
 }
 

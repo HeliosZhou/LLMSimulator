@@ -185,6 +185,8 @@ int main(int argc, char *argv[]) {
       config["system"]["optimization"]["compressed_kv"].as<bool>();
   model_config.use_absorb =
       config["system"]["optimization"]["use_absorb"].as<bool>();
+  model_config.skewness =
+      config["simulation"]["skewness"].as<double>();
   
   model_config.precision_byte = config["simulation"]["precision_byte"].as<int>();
   if(model_config.precision_byte == 1){ // if FP8 or INT8 
@@ -250,6 +252,7 @@ int main(int argc, char *argv[]) {
                             std::to_string(max_batch_size) + "_maxprocess" +
                             std::to_string(max_process_token) + "_iter" +
                             std::to_string(total_iter) + 
+                            "_skew"+ std::to_string(int(model_config.skewness*10)) +                            
                             "_precision_byte" + std::to_string(precision_bytes) + "_parallel_execution" + std::to_string(system_config.parallel_execution) + "_ramul_prefill.csv";
     }
     else{
@@ -263,6 +266,7 @@ int main(int argc, char *argv[]) {
                             std::to_string(max_batch_size) + "_maxprocess" +
                             std::to_string(max_process_token) + "_iter" +
                             std::to_string(total_iter) + 
+                            "_skew"+ std::to_string(int(model_config.skewness*10)) +                            
                             "_precision_byte" + std::to_string(precision_bytes) + "_parallel_execution" + std::to_string(system_config.parallel_execution) + "_prefill.csv";
     }
   }
@@ -278,6 +282,7 @@ int main(int argc, char *argv[]) {
                             std::to_string(max_batch_size) + "_maxprocess" +
                             std::to_string(max_process_token) + "_iter" +
                             std::to_string(total_iter) + 
+                            "_skew"+ std::to_string(int(model_config.skewness*10)) +                            
                             "_precision_byte" + std::to_string(precision_bytes) + "_parallel_execution" + std::to_string(system_config.parallel_execution) + "_ramul_decode.csv";
     }
     else{
@@ -291,6 +296,7 @@ int main(int argc, char *argv[]) {
                             std::to_string(max_batch_size) + "_maxprocess" +
                             std::to_string(max_process_token) + "_iter" +
                             std::to_string(total_iter) + 
+                            "_skew"+ std::to_string(int(model_config.skewness*10)) +                            
                             "_precision_byte" + std::to_string(precision_bytes) + "_parallel_execution" + std::to_string(system_config.parallel_execution) + "_decode.csv";
     }
   }
@@ -306,6 +312,7 @@ int main(int argc, char *argv[]) {
                             std::to_string(max_batch_size) + "_maxprocess" +
                             std::to_string(max_process_token) + "_iter" +
                             std::to_string(total_iter) + 
+                            "_skew"+ std::to_string(int(model_config.skewness*10)) +                            
                             "_precision_byte" + std::to_string(precision_bytes) + "_parallel_execution" + std::to_string(system_config.parallel_execution) + "_ramul.csv";
     }
     else{
@@ -319,6 +326,7 @@ int main(int argc, char *argv[]) {
                             std::to_string(max_batch_size) + "_maxprocess" +
                             std::to_string(max_process_token) + "_iter" +
                             std::to_string(total_iter) + 
+                            "_skew"+ std::to_string(int(model_config.skewness*10)) +                            
                             "_precision_byte" + std::to_string(precision_bytes) + "_parallel_execution" + std::to_string(system_config.parallel_execution) + ".csv";
     }
   }

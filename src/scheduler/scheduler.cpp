@@ -162,6 +162,20 @@ std::set<int> Scheduler::getEquallyDistributedExpert(int token_id, int top_k) {
   return route;
 }
 
+std::set<int> Scheduler::getZipfianRandomExpert(std::vector<double> weight, int top_k) {
+  static unsigned int seed = 777;
+  static std::mt19937 generator(seed);
+  static std::discrete_distribution<int> distribution(weight.begin(), weight.end());
+  
+  std::set<int> route;
+
+  while (route.size() < top_k) {
+    int seq_id = (distribution(generator) % model_config.num_routed_expert);
+    route.insert(seq_id);
+  }
+  return route;
+}
+
 double Scheduler::getNormaldistribution() {
   static unsigned int seed = 777;
   static std::default_random_engine generator(seed);
@@ -179,7 +193,7 @@ int Scheduler::getPoissondistribution(int request_per_second) {
 }
 
 int Scheduler::getNumInjection() {
-  static unsigned int seed = 77;
+  static unsigned int seed = 777;
   static std::mt19937 generator(seed);
   static std::uniform_int_distribution<int> distribution(0, 4);
   static std::uniform_int_distribution<int> get_seq(0, 4);

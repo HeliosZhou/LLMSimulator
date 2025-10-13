@@ -35,6 +35,7 @@ simulation:
   input_len: 1024
   output_len: 10
   precision_byte: 1
+  skewness: 0.0
   iter: 5
   injection_rate: 0
   exit_out_of_memory: off

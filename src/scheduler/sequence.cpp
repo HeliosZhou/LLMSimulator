@@ -165,6 +165,10 @@ void BatchedSequence::update_expert(int num_expert, int top_k,
     }
   }
   clear_expert();
+  std::vector<double> skewness_weight(num_expert); // w ~ 1/k^s
+  for (int i = 0 ; i < num_expert; i++){
+    skewness_weight[i] = 1.0 / pow((i + 1), scheduler->model_config.skewness);
+  }
 
   for (auto seq : sequence) {
     if (seq->num_process_token == 0) {
@@ -183,8 +187,13 @@ void BatchedSequence::update_expert(int num_expert, int top_k,
           num_token_in_expert[e_id] += 1;
         }
       } else {
-        std::set<int> expert_list = scheduler->getRandomExpert(top_k);
-        // std::set<int> expert_list = scheduler->getEquallyDistributedExpert(token_id, top_k); // for test fast
+        std::set<int> expert_list;
+        if(scheduler->model_config.skewness > 0){
+          expert_list = scheduler->getZipfianRandomExpert(skewness_weight, top_k); // for skewed expert test
+        }
+        else{
+          expert_list = scheduler->getRandomExpert(top_k);
+        }
         for (auto idx : expert_list) {
           num_token_in_expert[idx] += 1;
         }
