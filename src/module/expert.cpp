@@ -111,12 +111,11 @@ ExpertFFN::ExpertFFN(std::string& prefix, std::string& name,
     non_moe_device_list, device);      
   add_module(all_reduce_for_gather);
 
-
   auto sync_0 = Sync::Create(module_map_name, "sync_0", device_list, device);
   add_module(sync_0);
 
-  auto sync_1 = Sync::Create(module_map_name, "sync_1", device_list, device);
-  add_module(sync_1);
+  auto sync_for_moe_scatter = Sync::Create(module_map_name, "sync_for_moe_scatter", device_list, device);
+  add_module(sync_for_moe_scatter);
 
   auto sync_2 = Sync::Create(module_map_name, "sync_2", device_list, device);
   add_module(sync_2);
@@ -124,16 +123,20 @@ ExpertFFN::ExpertFFN(std::string& prefix, std::string& name,
   auto sync_3 = Sync::Create(module_map_name, "sync_3", device_list, device);
   add_module(sync_3);
 
-  auto sync_4 = Sync::Create(module_map_name, "sync_4", device_list, device);
-  add_module(sync_4);
+  auto sync_for_moe_gather = Sync::Create(module_map_name, "sync_for_moe_gather", device_list, device);
+  add_module(sync_for_moe_gather);
 
   auto sync_5 = Sync::Create(module_map_name, "sync_5", device_list, device);
   add_module(sync_5);
+
+  auto sync_6 = Sync::Create(module_map_name, "sync_6", device_list, device);
+  add_module(sync_6);
 }
 
 Tensor::Ptr ExpertFFN::forward(const Tensor::Ptr input,
                                BatchedSequence::Ptr sequences_metadata) {
   Module::Ptr sync_0 = get_module("sync_0");
+  Module::Ptr sync_for_moe_scatter = get_module("sync_for_moe_scatter");
   (*sync_0)(input, sequences_metadata);
 
   Module::Ptr gate_fn = get_module("gate_fn");
@@ -147,6 +150,8 @@ Tensor::Ptr ExpertFFN::forward(const Tensor::Ptr input,
   Module::Ptr route = get_module("moe_route");
 
   Tensor::Ptr scatter_out = (*moe_scatter)(gate_update_out, sequences_metadata);
+  (*sync_for_moe_scatter)(input, sequences_metadata);
+
   TensorVec input_vec;
   input_vec.push_back(scatter_out);
   TensorVec route_out = (*route)(input_vec, sequences_metadata);
@@ -155,11 +160,11 @@ Tensor::Ptr ExpertFFN::forward(const Tensor::Ptr input,
 
   Tensor::Ptr result;
 
-  Module::Ptr sync_1 = get_module("sync_1");
   Module::Ptr sync_2 = get_module("sync_2");
   Module::Ptr sync_3 = get_module("sync_3");
-  Module::Ptr sync_4 = get_module("sync_4");
+  Module::Ptr sync_for_moe_gather = get_module("sync_for_moe_gather");
   Module::Ptr sync_5 = get_module("sync_5");
+  Module::Ptr sync_6 = get_module("sync_6");
 
   Module::Ptr all_reduce_for_e_tp = get_module("moe_all_reduce_for_e_tp");
   Module::Ptr all_reduce_for_gather = get_module("moe_all_reduce_for_gather");
@@ -175,20 +180,20 @@ Tensor::Ptr ExpertFFN::forward(const Tensor::Ptr input,
     expert_out.push_back(result);
   }
 
-  (*sync_1)(input, sequences_metadata);
+  (*sync_2)(input, sequences_metadata);
 
   result = (*all_reduce_for_e_tp)(input, sequences_metadata);
 
-  (*sync_2)(input, sequences_metadata);
+  (*sync_3)(input, sequences_metadata);
 
   Module::Ptr moe_gather = get_module("moe_gather");
   TensorVec moe_gather_out = (*moe_gather)(expert_out, sequences_metadata);
 
-  (*sync_3)(input, sequences_metadata);
+  (*sync_for_moe_gather)(input, sequences_metadata);
 
   result = (*all_reduce_for_gather)(input, sequences_metadata);
 
-  (*sync_4)(input, sequences_metadata);
+  (*sync_5)(input, sequences_metadata);
   
   // Shared Expert //
   for(int shared_expert_idx = 0 ; shared_expert_idx < num_shared_expert; shared_expert_idx ++){
@@ -196,7 +201,7 @@ Tensor::Ptr ExpertFFN::forward(const Tensor::Ptr input,
     result = (*shared_expert_ffn)(input, sequences_metadata);
   }
 
-  (*sync_5)(input, sequences_metadata);
+  (*sync_6)(input, sequences_metadata);
 
   return result;
 }

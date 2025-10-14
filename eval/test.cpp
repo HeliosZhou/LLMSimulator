@@ -172,7 +172,12 @@ int main(int argc, char *argv[]) {
     model_config = grok1;
   } else if (!model_name.compare("deepseekV3")) {
     model_config = deepseekV3;
-  } else {
+  }else if (!model_name.compare("llama4_scout")) {
+    model_config = llama4_scout;
+  }else if (!model_name.compare("llama4_maverick")) {
+    model_config = llama4_maverick;
+  } 
+  else {
     fail("No model configuration of " + model_name);
   }
 

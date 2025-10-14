@@ -111,7 +111,10 @@ Tensor::Ptr MoEScatter::forward(const Tensor::Ptr input,
   }
 
   time_ns total_time = 0;
+  time_ns send_time = 0;
+  time_ns receive_time = 0;
 
+  // Send time // 
   int intra_node_comm_token = 0;
   int inter_node_comm_token = 0;
 
@@ -173,19 +176,89 @@ Tensor::Ptr MoEScatter::forward(const Tensor::Ptr input,
     time_ns inter_node_latency = inter_node_comm_size / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
                                 + device->config.node_ict_latency;
 
-    total_time = std::max(intra_node_latency, inter_node_latency);
+    send_time = std::max(intra_node_latency, inter_node_latency);
   }
   else if (sequences_metadata->get_gen_process_token() > 0){
     // decode - use only InifiniBand, but when num_node == 1, use NVLink
     if(device->config.num_node == 1){
-      total_time = (intra_node_comm_size + inter_node_comm_size) / device->config.device_ict_bandwidth * 1000 * 1000 * 1000
+      send_time = (intra_node_comm_size + inter_node_comm_size) / device->config.device_ict_bandwidth * 1000 * 1000 * 1000
       + device->config.device_ict_latency;
     }
     else{
-      total_time = (intra_node_comm_size + inter_node_comm_size) / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
+      send_time = (intra_node_comm_size + inter_node_comm_size) / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
       + device->config.node_ict_latency;
     }
   }
+
+  // Receive time //
+  intra_node_comm_token = 0;
+  inter_node_comm_token = 0;
+
+  int dst_device_rank = device->device_total_rank; // dst: destination device, current device
+  int dst_node = dst_device_rank / device->config.num_device;
+
+  int dst_dp_rank = device->device_total_rank / ne_tp_dg; // data parallel index
+  
+  int expert_id_offset = device->model_config.num_routed_expert / total_num_device * (dst_device_rank / e_tp_dg) * e_tp_dg; // experts in a dst_device
+  int num_expert_per_device = device->model_config.num_routed_expert / total_num_device * e_tp_dg;
+
+  for(int src_dp_idx = 0; src_dp_idx < total_num_device / ne_tp_dg; src_dp_idx ++){ 
+    if(src_dp_idx != dst_dp_rank){ // from other dp space
+
+      int src_device_rank = src_dp_idx * ne_tp_dg;
+      int src_node = src_device_rank / device->config.num_device;
+
+      if(dst_node == src_node){ 
+        // intra node
+        for(int e_id = expert_id_offset; e_id < expert_id_offset + num_expert_per_device; e_id ++){
+          intra_node_comm_token += sequences_metadata->scheduler->running_queue[src_dp_idx]->local_num_token_in_expert[e_id]; // from the experts in a src device
+        }
+      }
+      else{ 
+        // inter node
+        for(int e_id = expert_id_offset; e_id < expert_id_offset + num_expert_per_device; e_id ++){
+          inter_node_comm_token += sequences_metadata->scheduler->running_queue[src_dp_idx]->local_num_token_in_expert[e_id];
+        }
+      }
+    }
+  }
+
+  // if ne_tp_dg > 1, tp sharing devices have same tokens. Therefore, need to be divided by ne_tp_dg (send only 1/ne_tp_dg tokens)
+  
+  intra_node_comm_size = 1.0 * intra_node_comm_token * k * input->precision_byte;
+  inter_node_comm_size = 1.0 * inter_node_comm_token * k * input->precision_byte;
+
+  intra_node_comm_size /= ne_tp_dg;
+  inter_node_comm_size /= ne_tp_dg;
+
+  if(intra_node_comm_size == 0 && inter_node_comm_size == 0){
+    return output;
+  }
+
+  if(sequences_metadata->get_sum_process_token() > 0){
+    // prefill & mixed stage - use both NVLink and InfiniBand
+
+    time_ns intra_node_latency = intra_node_comm_size / device->config.device_ict_bandwidth * 1000 * 1000 * 1000
+                                + device->config.device_ict_latency;
+                                
+    time_ns inter_node_latency = inter_node_comm_size / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
+                                + device->config.node_ict_latency;
+
+    receive_time = std::max(intra_node_latency, inter_node_latency);
+  }
+  else if (sequences_metadata->get_gen_process_token() > 0){
+    // decode - use only InifiniBand, but when num_node == 1, use NVLink
+    if(device->config.num_node == 1){
+      receive_time = (intra_node_comm_size + inter_node_comm_size) / device->config.device_ict_bandwidth * 1000 * 1000 * 1000
+      + device->config.device_ict_latency;
+    }
+    else{
+      receive_time = (intra_node_comm_size + inter_node_comm_size) / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
+      + device->config.node_ict_latency;
+    }
+  }
+
+  total_time = std::max(send_time, receive_time);
 
   if (input->parallel_execution && !device->config.communication_hiding) {
     if (input->isPerformHigh()) {
@@ -223,7 +296,10 @@ TensorVec MoEGather::forward(const TensorVec input_vec,
   }
 
   time_ns total_time = 0;
+  time_ns send_time = 0;
+  time_ns receive_time = 0;
 
+  // Receive time // 
   int intra_node_comm_token = 0;
   int inter_node_comm_token = 0;
 
@@ -292,19 +368,89 @@ TensorVec MoEGather::forward(const TensorVec input_vec,
     time_ns inter_node_latency = inter_node_comm_size / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
                                 + device->config.node_ict_latency;
 
-    total_time = std::max(intra_node_latency, inter_node_latency);
+    receive_time = std::max(intra_node_latency, inter_node_latency);
   }
   else if (sequences_metadata->get_gen_process_token() > 0){
     // decode - use only InifiniBand, but when num_node == 1, use NVLink
     if(device->config.num_node == 1){
-      total_time = (intra_node_comm_size + inter_node_comm_size) / device->config.device_ict_bandwidth * 1000 * 1000 * 1000
+      receive_time = (intra_node_comm_size + inter_node_comm_size) / device->config.device_ict_bandwidth * 1000 * 1000 * 1000
       + device->config.device_ict_latency;
     }
     else{
-      total_time = (intra_node_comm_size + inter_node_comm_size) / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
+      receive_time = (intra_node_comm_size + inter_node_comm_size) / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
       + device->config.node_ict_latency;
     }
   }
+
+  // Send time //
+  intra_node_comm_token = 0;
+  inter_node_comm_token = 0;
+
+  int src_device_rank = device->device_total_rank; // src: source device, current device
+  int src_node = src_device_rank / device->config.num_device;
+
+  int src_dp_rank = device->device_total_rank / ne_tp_dg; // data parallel index
+  
+  int expert_id_offset = device->model_config.num_routed_expert / total_num_device * (src_device_rank / e_tp_dg) * e_tp_dg; // experts in a src_device
+  int num_expert_per_device = device->model_config.num_routed_expert / total_num_device * e_tp_dg;
+
+  for(int dst_dp_idx = 0; dst_dp_idx < total_num_device / ne_tp_dg; dst_dp_idx ++){ 
+    if(dst_dp_idx != src_dp_rank){ // to other dp space
+
+      int dst_device_rank = dst_dp_idx * ne_tp_dg;
+      int dst_node = dst_device_rank / device->config.num_device;
+
+      if(dst_node == src_node){ 
+        // intra node
+        for(int e_id = expert_id_offset; e_id < expert_id_offset + num_expert_per_device; e_id ++){
+          intra_node_comm_token += sequences_metadata->scheduler->running_queue[dst_dp_idx]->local_num_token_in_expert[e_id]; // to orig device from the experts in a src device
+        }
+      }
+      else{ 
+        // inter node
+        for(int e_id = expert_id_offset; e_id < expert_id_offset + num_expert_per_device; e_id ++){
+          inter_node_comm_token += sequences_metadata->scheduler->running_queue[dst_dp_idx]->local_num_token_in_expert[e_id];
+        }
+      }
+    }
+  }
+
+  // if ne_tp_dg > 1, tp sharing devices have same tokens. Therefore, need to be divided by ne_tp_dg (send only 1/ne_tp_dg tokens)
+  
+  intra_node_comm_size = 1.0 * intra_node_comm_token * k * input->precision_byte;
+  inter_node_comm_size = 1.0 * inter_node_comm_token * k * input->precision_byte;
+
+  intra_node_comm_size /= ne_tp_dg;
+  inter_node_comm_size /= ne_tp_dg;
+
+  if(intra_node_comm_size == 0 && inter_node_comm_size == 0){
+    return input_vec;
+  }
+
+  if(sequences_metadata->get_sum_process_token() > 0){
+    // prefill & mixed stage - use both NVLink and InfiniBand
+
+    time_ns intra_node_latency = intra_node_comm_size / device->config.device_ict_bandwidth * 1000 * 1000 * 1000
+                                + device->config.device_ict_latency;
+                                
+    time_ns inter_node_latency = inter_node_comm_size / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
+                                + device->config.node_ict_latency;
+
+    send_time = std::max(intra_node_latency, inter_node_latency);
+  }
+  else if (sequences_metadata->get_gen_process_token() > 0){
+    // decode - use only InifiniBand, but when num_node == 1, use NVLink
+    if(device->config.num_node == 1){
+      send_time = (intra_node_comm_size + inter_node_comm_size) / device->config.device_ict_bandwidth * 1000 * 1000 * 1000
+      + device->config.device_ict_latency;
+    }
+    else{
+      send_time = (intra_node_comm_size + inter_node_comm_size) / device->config.node_ict_bandwidth * 1000 * 1000 * 1000
+      + device->config.node_ict_latency;
+    }
+  }
+
+  total_time = std::max(send_time, receive_time);
 
   if (input->parallel_execution && !device->config.communication_hiding) {
     if (input->isPerformHigh()) {
