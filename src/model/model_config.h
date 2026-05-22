@@ -112,6 +112,10 @@ static ModelConfig llama3_405B =
     ModelConfig(16384, 128, 126, 128, 8, 131072, 53248, 53248, 1, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 128256, false, false, 0.0,
                 "llama3_405B");
 
+static ModelConfig gpt3_175B =
+    ModelConfig(12288, 128, 96, 96, 96, 32768, 49152, 49152, 1, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 50257, false, false, 0.0,
+                "gpt3_175B");
+
 static ModelConfig llama4_scout = // 16 Expert 
     ModelConfig(5120, 128, 48, 40, 8, 10485760, 16384, 8192, 1, 2, 16, 1, 1, 1,
                 3, 0, 0, 0, 0, 0, 202048, false, false, 0.0,"llama4_scout");

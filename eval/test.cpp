@@ -76,6 +76,10 @@ int main(int argc, char *argv[]) {
     system_config.node_ict_bandwidth = 100.0 * 1000 * 1000 * 1000; // B/s InfiniBand XDR
     system_config.node_ict_latency = 0.13 * 1000; // ns
   }
+  else if(config["system"]["infiniband_gen"].as<int>() == 2400){
+    system_config.node_ict_bandwidth = 300.0 * 1000 * 1000 * 1000; // B/s scaled interconnect
+    system_config.node_ict_latency = 0.13 * 1000; // ns
+  }
   else if(config["system"]["infiniband_gen"].as<int>() == 3600){
     system_config.node_ict_bandwidth = 450.0 * 1000 * 1000 * 1000; // B/s NVLink 4th Gen
     system_config.node_ict_latency = 0.8 * 1000; // ns
@@ -90,6 +94,23 @@ int main(int argc, char *argv[]) {
   
   system_config.num_node = num_node;
   system_config.num_device = num_device;
+
+  if (config["system"]["logic_x"]) {
+    system_config.logic_x = config["system"]["logic_x"].as<int>();
+    system_config.logic_memory_bandwidth =
+        system_config.memory_bandwidth * system_config.logic_x;
+  }
+  if (config["system"]["logic_op_b"]) {
+    system_config.logic_op_b = config["system"]["logic_op_b"].as<double>();
+  }
+  if (config["system"]["pim_x"]) {
+    system_config.pim_x = config["system"]["pim_x"].as<int>();
+    system_config.pim_memory_bandwidth =
+        system_config.memory_bandwidth * system_config.pim_x;
+  }
+  if (config["system"]["pim_op_b"]) {
+    system_config.pim_op_b = config["system"]["pim_op_b"].as<double>();
+  }
 
 
   system_config.high_processor_type = ProcessorType::GPU;
@@ -168,6 +189,8 @@ int main(int argc, char *argv[]) {
     model_config = llama7bMoE;
   } else if (!model_name.compare("llama3_405B")) {
     model_config = llama3_405B;
+  } else if (!model_name.compare("gpt3_175B")) {
+    model_config = gpt3_175B;
   } else if (!model_name.compare("grok1")) {
     model_config = grok1;
   } else if (!model_name.compare("deepseekV3")) {
