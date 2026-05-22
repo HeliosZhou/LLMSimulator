@@ -1,5 +1,251 @@
 [
 {
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/cluster.cpp.o -c /home/zsy/LLMSimulator/src/hardware/cluster.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/cluster.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/cluster.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/node.cpp.o -c /home/zsy/LLMSimulator/src/hardware/node.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/node.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/node.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/device.cpp.o -c /home/zsy/LLMSimulator/src/hardware/device.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/device.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/device.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/executor.cpp.o -c /home/zsy/LLMSimulator/src/hardware/executor.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/executor.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/executor.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/layer_impl.cpp.o -c /home/zsy/LLMSimulator/src/hardware/layer_impl.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/layer_impl.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/layer_impl.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/activation_impl.cpp.o -c /home/zsy/LLMSimulator/src/hardware/activation_impl.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/activation_impl.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/activation_impl.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/linear_impl.cpp.o -c /home/zsy/LLMSimulator/src/hardware/linear_impl.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/linear_impl.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/linear_impl.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/attention_sum_impl.cpp.o -c /home/zsy/LLMSimulator/src/hardware/attention_sum_impl.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/attention_sum_impl.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/attention_sum_impl.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/attention_gen_impl.cpp.o -c /home/zsy/LLMSimulator/src/hardware/attention_gen_impl.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/attention_gen_impl.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/attention_gen_impl.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/hardware",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/hardware.dir/attention_mixed_impl.cpp.o -c /home/zsy/LLMSimulator/src/hardware/attention_mixed_impl.cpp",
+  "file": "/home/zsy/LLMSimulator/src/hardware/attention_mixed_impl.cpp",
+  "output": "src/hardware/CMakeFiles/hardware.dir/attention_mixed_impl.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/module.cpp.o -c /home/zsy/LLMSimulator/src/module/module.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/module.cpp",
+  "output": "src/module/CMakeFiles/module.dir/module.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/tensor.cpp.o -c /home/zsy/LLMSimulator/src/module/tensor.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/tensor.cpp",
+  "output": "src/module/CMakeFiles/module.dir/tensor.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/module_graph.cpp.o -c /home/zsy/LLMSimulator/src/module/module_graph.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/module_graph.cpp",
+  "output": "src/module/CMakeFiles/module.dir/module_graph.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/timeboard.cpp.o -c /home/zsy/LLMSimulator/src/module/timeboard.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/timeboard.cpp",
+  "output": "src/module/CMakeFiles/module.dir/timeboard.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/activation.cpp.o -c /home/zsy/LLMSimulator/src/module/activation.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/activation.cpp",
+  "output": "src/module/CMakeFiles/module.dir/activation.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/layer.cpp.o -c /home/zsy/LLMSimulator/src/module/layer.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/layer.cpp",
+  "output": "src/module/CMakeFiles/module.dir/layer.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/layernorm.cpp.o -c /home/zsy/LLMSimulator/src/module/layernorm.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/layernorm.cpp",
+  "output": "src/module/CMakeFiles/module.dir/layernorm.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/parallel.cpp.o -c /home/zsy/LLMSimulator/src/module/parallel.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/parallel.cpp",
+  "output": "src/module/CMakeFiles/module.dir/parallel.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/linear.cpp.o -c /home/zsy/LLMSimulator/src/module/linear.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/linear.cpp",
+  "output": "src/module/CMakeFiles/module.dir/linear.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/attention.cpp.o -c /home/zsy/LLMSimulator/src/module/attention.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/attention.cpp",
+  "output": "src/module/CMakeFiles/module.dir/attention.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/compressed_kv_restore.cpp.o -c /home/zsy/LLMSimulator/src/module/compressed_kv_restore.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/compressed_kv_restore.cpp",
+  "output": "src/module/CMakeFiles/module.dir/compressed_kv_restore.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/decoder.cpp.o -c /home/zsy/LLMSimulator/src/module/decoder.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/decoder.cpp",
+  "output": "src/module/CMakeFiles/module.dir/decoder.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/communication.cpp.o -c /home/zsy/LLMSimulator/src/module/communication.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/communication.cpp",
+  "output": "src/module/CMakeFiles/module.dir/communication.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/embedding.cpp.o -c /home/zsy/LLMSimulator/src/module/embedding.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/embedding.cpp",
+  "output": "src/module/CMakeFiles/module.dir/embedding.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/route.cpp.o -c /home/zsy/LLMSimulator/src/module/route.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/route.cpp",
+  "output": "src/module/CMakeFiles/module.dir/route.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/rope.cpp.o -c /home/zsy/LLMSimulator/src/module/rope.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/rope.cpp",
+  "output": "src/module/CMakeFiles/module.dir/rope.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/residual.cpp.o -c /home/zsy/LLMSimulator/src/module/residual.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/residual.cpp",
+  "output": "src/module/CMakeFiles/module.dir/residual.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/expert.cpp.o -c /home/zsy/LLMSimulator/src/module/expert.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/expert.cpp",
+  "output": "src/module/CMakeFiles/module.dir/expert.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/module",
+  "command": "/usr/bin/c++ -DDEBUG -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/module.dir/lm_head.cpp.o -c /home/zsy/LLMSimulator/src/module/lm_head.cpp",
+  "file": "/home/zsy/LLMSimulator/src/module/lm_head.cpp",
+  "output": "src/module/CMakeFiles/module.dir/lm_head.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/model",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/model.dir/llm.cpp.o -c /home/zsy/LLMSimulator/src/model/llm.cpp",
+  "file": "/home/zsy/LLMSimulator/src/model/llm.cpp",
+  "output": "src/model/CMakeFiles/model.dir/llm.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/scheduler",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/scheduler.dir/scheduler.cpp.o -c /home/zsy/LLMSimulator/src/scheduler/scheduler.cpp",
+  "file": "/home/zsy/LLMSimulator/src/scheduler/scheduler.cpp",
+  "output": "src/scheduler/CMakeFiles/scheduler.dir/scheduler.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/scheduler",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -O3 -DNDEBUG -fPIC -o CMakeFiles/scheduler.dir/sequence.cpp.o -c /home/zsy/LLMSimulator/src/scheduler/sequence.cpp",
+  "file": "/home/zsy/LLMSimulator/src/scheduler/sequence.cpp",
+  "output": "src/scheduler/CMakeFiles/scheduler.dir/sequence.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/dram.dir/pimkernel/pim_kernel.cpp.o -c /home/zsy/LLMSimulator/src/dram/pimkernel/pim_kernel.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/pimkernel/pim_kernel.cpp",
+  "output": "src/dram/CMakeFiles/dram.dir/pimkernel/pim_kernel.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/dram.dir/pimkernel/Read.cpp.o -c /home/zsy/LLMSimulator/src/dram/pimkernel/Read.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/pimkernel/Read.cpp",
+  "output": "src/dram/CMakeFiles/dram.dir/pimkernel/Read.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/dram.dir/pimkernel/Write.cpp.o -c /home/zsy/LLMSimulator/src/dram/pimkernel/Write.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/pimkernel/Write.cpp",
+  "output": "src/dram/CMakeFiles/dram.dir/pimkernel/Write.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/dram.dir/pimkernel/GEMV.cpp.o -c /home/zsy/LLMSimulator/src/dram/pimkernel/GEMV.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/pimkernel/GEMV.cpp",
+  "output": "src/dram/CMakeFiles/dram.dir/pimkernel/GEMV.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/dram.dir/dram_interface.cpp.o -c /home/zsy/LLMSimulator/src/dram/dram_interface.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/dram_interface.cpp",
+  "output": "src/dram/CMakeFiles/dram.dir/dram_interface.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/dram.dir/dram_request.cpp.o -c /home/zsy/LLMSimulator/src/dram/dram_request.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/dram_request.cpp",
+  "output": "src/dram/CMakeFiles/dram.dir/dram_request.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/dram.dir/pim_request.cpp.o -c /home/zsy/LLMSimulator/src/dram/pim_request.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/pim_request.cpp",
+  "output": "src/dram/CMakeFiles/dram.dir/pim_request.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/dram.dir/memory_object.cpp.o -c /home/zsy/LLMSimulator/src/dram/memory_object.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/memory_object.cpp",
+  "output": "src/dram/CMakeFiles/dram.dir/memory_object.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -fPIC -o CMakeFiles/dram.dir/mmap_controller.cpp.o -c /home/zsy/LLMSimulator/src/dram/mmap_controller.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/mmap_controller.cpp",
+  "output": "src/dram/CMakeFiles/dram.dir/mmap_controller.cpp.o"
+},
+{
   "directory": "/home/zsy/LLMSimulator/build/_deps/yaml-cpp-build",
   "command": "/usr/bin/c++ -DYAML_CPP_NO_CONTRIB -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/src -O3 -DNDEBUG -std=c++20 -fPIC -fPIC -Wall -Wextra -Wshadow -Weffc++ -Wno-long-long -pedantic -pedantic-errors -o CMakeFiles/yaml-cpp.dir/src/binary.cpp.o -c /home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/src/binary.cpp",
   "file": "/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/src/binary.cpp",

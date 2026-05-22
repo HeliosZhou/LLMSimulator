@@ -1,48 +1,44 @@
 model:
   model_name: deepseekV3
-
 system:
-  gpu_gen: B100 # e.g. A100, H100, B100, B200 (currently only support 4 generation)
+  gpu_gen: B200
   nvlink_gen: 5
-  infiniband_gen: 800
-  num_node: 1
+  infiniband_gen: 7200
+  num_node: 4
   num_device: 8
   processor_type: GPU
   distribution:
     expert_tensor_degree: 1
     none_expert_tensor_degree: 1
   optimization:
-    parallel_execution: off
-    hetero_subbatch: off
-    disagg_system: off
-    use_low_unit_moe_only: off
-    use_ramulator: off
-    compressed_kv: on
-    use_absorb: on
-    use_flash_mla: on
-    use_flash_attention: on
-    reuse_kv_cache: on
+    parallel_execution: false
+    hetero_subbatch: false
+    disagg_system: false
+    use_low_unit_moe_only: false
+    use_ramulator: false
+    compressed_kv: true
+    use_absorb: true
+    use_flash_mla: true
+    use_flash_attention: true
+    reuse_kv_cache: true
     kv_cache_reuse_rate: 0.0
-    prefill_mode: off
-    decode_mode: on
-
+    prefill_mode: false
+    decode_mode: true
 serving:
-  max_batch_size: 32
+  max_batch_size: 64
   max_process_token: 0
-
 simulation:
   data: synthesis
-  input_len: 1024
-  output_len: 10
-  precision_byte: 1
+  input_len: 2048
+  output_len: 2
+  precision_byte: 2
   skewness: 0.0
-  iter: 5
+  iter: 3
   injection_rate: 0
-  exit_out_of_memory: off
-  mem_cap_limit: off # if memory usage exceed memory capacity, batchsize modifies
-
+  exit_out_of_memory: false
+  mem_cap_limit: false
 log:
-  print_log: on
-  export_gantt: off
-  output_directory: ../data/
+  print_log: false
+  export_gantt: false
+  output_directory: /home/zsy/LLMSimulator/experiments/exp4/data
   gantt_directory: ./gantt
