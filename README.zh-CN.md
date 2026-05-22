@@ -7,6 +7,7 @@ LLMSimulator 集成了经过修改的 [Ramulator 2.0](https://github.com/CMU-SAF
 
 如果你想先快速了解“这个工程到底是什么、适合做什么任务”，可以先阅读：[工程说明](docs/PROJECT_OVERVIEW.zh-CN.md)。
 如果你现在更关心“这个工程应该怎么编译和运行”，可以直接看：[运行指南](docs/RUN_GUIDE.zh-CN.md)。
+如果你想深入理解“仿真器如何把 LLM 数学结构转换成 FLOPs、访存、通信和硬件时间”，可以阅读：[数学机理与代码对照](docs/LLM_SIMULATION_MATH.zh-CN.md)。
 
 主要特性：
 - 支持灵活配置输入长度、输出长度、批大小、请求注入速率以及多节点硬件配置

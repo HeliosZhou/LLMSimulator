@@ -771,11 +771,346 @@ MLA 的 GPU 模型入口：
 
 如果你下一步要继续深入，最值得继续看的两个方向是：
 
-1. `src/module/`：理解“模型结构如何转成模块图”
-2. `src/hardware/*_impl.cpp`：理解“每类模块的时延和访存公式具体是什么”
+1. `src/module/`：理解”模型结构如何转成模块图”
+2. `src/hardware/*_impl.cpp`：理解”每类模块的时延和访存公式具体是什么”
 
-## 9. 相关文档
+---
+
+## 9. 线性层（Linear）的 Roofline 模型
+
+### 9.1 核心公式
+
+线性层计算 `output = input @ weight^T`，模拟器使用标准 Roofline 模型计算延迟：
+
+```
+total_flops = 2.0 * m * k * n          # 矩阵乘法的 FLOPs
+total_memory_size = (m*k + k*n + m*n) * precision_byte   # 总访存量（input + weight + output）
+compute_duration = total_flops / compute_peak_flops       # 计算时间
+memory_duration = total_memory_size / memory_bandwidth    # 访存时间
+total_duration = max(compute_duration, memory_duration)   # Roofline 模型
+opb = total_flops / total_memory_size                      # 算术强度（Op/B）
+```
+
+其中 `m = input.shape[0]`（batch 维度），`k = input.shape[1]`（隐藏维度），`n = weight.shape[1]`（输出维度）。
+
+### 9.2 GPU 执行（LinearExecutionGPU）
+
+- `compute_peak_flops` = `config.compute_peak_flops`（如 B200 为 2250 TFLOPS for FP16）
+- `memory_bandwidth` = `config.memory_bandwidth`（如 B200 为 8 TB/s）
+- 访存：input/weight/output 全部通过 `DRAMRequestType::kRead/kWrite`，走 GPU DRAM 控制器
+- 典型场景：prefill 阶段的大矩阵乘，以及 decode 阶段在 GPU 上执行的投影层
+
+### 9.3 PIM 执行（LinearExecutionPIM）
+
+- `compute_peak_flops` = `config.pim_memory_bandwidth * config.pim_op_b`
+  - 默认 `pim_op_b = 1`，因此算力等于 PIM 带宽
+  - 当 `precision_byte == 1`（FP8）时，`compute_peak_flops *= 2`
+- `memory_bandwidth` = `config.pim_memory_bandwidth`
+- 权重读取走 `DRAMRequestType::kGEMV`，`ProcessorType::PIM`，`PIMOperandType::kSrc`
+- input 和 output 仍走 GPU DRAM 控制器
+- 带宽放大系数：`bandwidth_x = config.pim_x`（B200 默认 16）
+
+### 9.4 Logic 执行（LinearExecutionLogic）
+
+- `compute_peak_flops` = `config.logic_memory_bandwidth * config.logic_op_b`
+  - 默认 `logic_op_b = 8`
+  - 当 `precision_byte == 1` 时，`compute_peak_flops *= 2`
+- `memory_bandwidth` = `config.logic_memory_bandwidth`
+- 权重读取走 `DRAMRequestType::kGEMV`，`ProcessorType::LOGIC`，`PIMOperandType::kSrc`
+- 带宽放大系数：`bandwidth_x = config.logic_x`（B200 默认 4）
+
+### 9.5 BatchedLinear（多头投影）
+
+用于同时计算多个头的 Q/K/V/O 投影（如 deepseekV3 的 `q_a_proj`、`kv_a_proj`）。
+
+输入输出为 3D 张量 `[num_heads, m, k/n]`：
+
+```
+total_flops = 2.0 * m * k * n * num_heads
+```
+
+访存量取决于 `duplicated_input` 标志：
+- `duplicated_input = true`（典型 decode 场景）：input 在头间共享，访存量为 `m*k + k*n*num_heads + m*n*num_heads`
+- `duplicated_input = false`（典型 prefill 场景）：input 不共享，访存量为 `(m*k + k*n + m*n) * num_heads`
+
+---
+
+## 10. Attention 算子的硬件模型
+
+### 10.1 标准 AttentionGen（decode 阶段）
+
+Decode 阶段 attention 分为三个子阶段：Scoring、Softmax、Context。
+
+#### Scoring（Q·K^T）
+
+```
+m = num_process_token (decode 时为 1)
+k = head_dim
+n = seq_len
+
+total_flops = 2.0 * m * k * n * num_heads
+total_memory_size:
+  GPU: m*k*(num_heads/num_kv_heads) + k*n + m*n*(num_heads/num_kv_heads)
+  LOGIC/PIM: k*n (仅 KV cache，因为 Q 在片上)
+```
+
+#### Softmax（scale + mask + softmax）
+
+固定使用 `7.0 * m * n * num_heads` FLOPs。包括：
+- scale（乘系数）：1 FLOP/elem
+- mask（加偏置）：1 FLOP/elem
+- exp：1 FLOP/elem
+- sum：1 FLOP/elem
+- 除：1 FLOP/elem
+- 其他常数操作
+
+访存量很小（中间结果在寄存器/片上），不纳入 memory_duration 计算。
+
+#### Context（score·V）
+
+```
+k = seq_len
+n = head_dim
+
+total_flops = 2.0 * m * k * n * num_heads
+total_memory_size:
+  GPU: m*k*(num_heads/num_kv_heads) + k*n + m*n*(num_heads/num_kv_heads)
+  LOGIC/PIM: k*n (仅 KV cache)
+```
+
+### 10.2 标准 AttentionSum（prefill 阶段）
+
+```
+m = seq_len (prefill 时为完整序列长度)
+k = head_dim
+n = seq_len
+
+total_flops = 2.0 * m * k * n * num_heads
+```
+
+访存计算与 AttentionGen 类似但 m = seq_len 而非 1，因此计算量远大于 decode 阶段。
+
+### 10.3 MLA（Multi-head Latent Attention）—— 非吸收模式
+
+MLA 使用低秩压缩的 KV cache：`kv_lora_rank` 代替完整的 `head_dim + qk_rope_head_dim`。
+
+#### MLA Gen（decode，非吸收）
+
+```
+压缩 Q:  Q 先通过 q_a_proj 压缩到 q_lora_rank，再通过 q_b_proj 恢复到 head_dim
+压缩 KV: KV 通过 kv_a_proj 压缩到 kv_lora_rank 存储为 CKV，decode 时通过 kv_b_proj 解压
+
+Scoring 阶段:
+  k = head_dim + qk_rope_head_dim (解压后的完整 KV 维度)
+  n = seq_len
+
+Context 阶段:
+  k = seq_len
+  n = head_dim
+```
+
+非吸收模式的关键瓶颈：**每次 decode 都需要解压完整的 KV**，即执行 `CKV · W_DK^T`，其中 `W_DK` 的形状为 `[kv_lora_rank, head_dim + qk_rope_head_dim]`。这导致 KV cache 的访存量随 seq_len 线性增长。
+
+#### MLA Sum（prefill，非吸收）
+
+与标准 AttentionSum 类似，但 Q/K/V 需要通过 MLA 的低秩投影计算。
+
+### 10.4 MLA 吸收模式（Layer Reordering / Absorb）
+
+利用矩阵乘法的结合律：
+
+```
+非吸收: score = Q · (CKV · W_DK^T)    要求解压整个 KV
+吸收:   score = (Q · W_DK^T) · CKV^T   避免显式解压
+```
+
+吸收模式下：
+- Q 先与 `W_DK^T` 相乘，得到压缩域的 Q_absorbed：`k = kv_lora_rank`
+- Scoring 直接在压缩域进行：`k = kv_lora_rank`（远小于 `head_dim + qk_rope_head_dim`）
+- **KV cache 访存从 O(seq_len * head_dim) 降为 O(seq_len * kv_lora_rank)**
+- 额外开销：需要单独做 RoPE 部分的 scoring（`qk_rope_head_dim` 维度）
+
+#### Absorb MLA Gen（decode，吸收模式）
+
+```
+RoPE Scoring (独立阶段):
+  k = qk_rope_head_dim
+  n = seq_len
+  RoPE 的 KV 仍需完整读取
+
+压缩域 Scoring:
+  k = kv_lora_rank
+  n = seq_len
+  这是吸收模式的主要加速来源：kv_lora_rank (=512) << head_dim + qk_rope_head_dim (=128+64=192)
+
+Context 阶段:
+  k = seq_len
+  n = head_dim
+  与吸收/非吸收无关，相同复杂度
+
+额外投影: tr_k_up_proj + v_up_proj（将吸收的 K 和 V 恢复）
+```
+
+#### Absorb MLA Sum（prefill，吸收模式）
+
+Prefill 阶段同样可以应用吸收，但加速效果不如 decode 显著（因为 prefill 本身是 compute-bound）。
+
+### 10.5 MLA Gen vs Absorb MLA Gen 的 KV 访存对比
+
+| 场景 | Scoring K 维度 | KV cache 大小 | 访存特征 |
+|------|---------------|--------------|---------|
+| 非吸收 decode | head_dim + qk_rope_head_dim (192) | O(L * 192 * B) | memory-bound |
+| 吸收 decode | kv_lora_rank (512) + qk_rope_head_dim (64) | O(L * 576 * B) | 需要读取 KV 全部，但计算维度更大 → ArI 更高 |
+
+注意：吸收模式下 kv_lora_rank=512 虽然比 head_dim+rope=192 大，但由于计算量增加而 KV cache 访存量不变（访存的是完整的 KV cache，但计算时只需要压缩域的 CKV），算术强度更高。
+
+实际效果见 `experiments/exp1/` 的 Figure 6 复现实验，加速比可达 2x~15x。
+
+---
+
+## 11. Executor 调度机制
+
+### 11.1 函数注册表
+
+`Executor::init()` 为每个 LayerType × ProcessorType 组合注册执行函数：
+
+| LayerType | GPU | LOGIC | PIM |
+|-----------|-----|-------|-----|
+| LINEAR | `LinearExecutionGPU` | `LinearExecutionLogic` | `LinearExecutionPIM` |
+| BATCHED_LINEAR | `BatchedLinearExecutionGPU` | `BatchedLinearExecutionLogic` | `BatchedLinearExecutionPIM` |
+| ACTIVATION | `ActivationExecutionGPU` | `ActivationExecutionLogic` | `ActivationExecutionPIM` |
+| ATTENTION_GEN | `AttentionGenExecutionGPU` | `AttentionGenExecutionLogic` | `AttentionGenExecutionPIM` |
+| ATTENTION_SUM | `AttentionSumExecutionGPU` | `AttentionSumExecutionLogic` | `AttentionSumExecutionPIM` |
+| ATTENTION_MIXED | `AttentionMixedExecutionGPU` | `AttentionMixedExecutionLogic` | `AttentionMixedExecutionPIM` |
+| MLA_GEN | `MultiLatentAttentionGenExecutionGPU` | `MultiLatentAttentionGenExecutionLogic` | `MultiLatentAttentionGenExecutionPIM` |
+| MLA_SUM | `MultiLatentAttentionSumExecutionGPU` | `MultiLatentAttentionSumExecutionLogic` | `MultiLatentAttentionSumExecutionPIM` |
+| MLA_MIXED | `MultiLatentAttentionMixedExecutionGPU` | `MultiLatentAttentionMixedExecutionLogic` | `MultiLatentAttentionMixedExecutionPIM` |
+| ABSORBED_MLA_GEN | `AbsorbMLAGenExecutionGPU` | `AbsorbMLAGenExecutionLogic` | `AbsorbMLAGenExecutionPIM` |
+| ABSORBED_MLA_SUM | `AbsorbMLASumExecutionGPU` | `AbsorbMLASumExecutionLogic` | `AbsorbMLASumExecutionPIM` |
+
+### 11.2 处理器选择策略
+
+`Executor::execution()` 遍历 `layer_info.processor_type` 中的所有候选处理器类型，执行每个类型的 `executePType()`，选择 `total_duration` 最小的：
+
+```cpp
+for (auto type : layer_info.processor_type) {
+    status = executePType(layer_type, tensor_list, sequences_metadata, type, ...);
+    if (duration == 0 || (duration > status.total_duration)) {
+        optimal_status = status;
+        duration = status.total_duration;
+    }
+}
+```
+
+### 11.3 PIM/LOGIC 带宽放大
+
+在执行 PIM 或 LOGIC 类型的算子前，设置带宽放大系数：
+
+```cpp
+if (processor_type == ProcessorType::LOGIC) {
+    bandwidth_x = device->config.logic_x;     // B200: 4
+} else if (processor_type == ProcessorType::PIM) {
+    bandwidth_x = device->config.pim_x;       // B200: 16
+}
+device->dram_interface->setPIMHWConfig(processor_type, bandwidth_x);
+```
+
+该系数传递给 DRAM 接口，模拟 PIM/Logic 处理器的并行访存能力。
+
+---
+
+## 12. 显存容量估算
+
+### 12.1 激活显存（Activation Memory）
+
+模型 forward 过程中各层输出 tensor 占用：
+- 每层的激活大小 = `batch_size * seq_len * hidden_dim * precision_byte`
+- 多头投影的激活额外乘以 `num_heads`
+- 所有层的激活总和 = `num_layers * 每层激活大小`
+
+### 12.2 权重显存（Weight Memory）
+
+所有模型参数的存储：
+- 每个 Linear 层的权重大小 = `in_features * out_features * precision_byte`
+- MoE 层：`num_routed_experts * expert_intermediate_dim * hidden_dim * precision_byte`
+- 总权重显存 = 所有投影层权重 + embedding + norm 参数 + MoE 参数
+
+### 12.3 KV Cache 显存
+
+#### 标准 Attention
+
+```
+kv_cache_size = 2 * batch_size * seq_len * num_layers * num_kv_heads * head_dim * precision_byte
+```
+
+#### MLA 非吸收模式
+
+```
+kv_cache_size = 2 * batch_size * seq_len * num_layers * kv_lora_rank * precision_byte
+              + batch_size * seq_len * num_layers * qk_rope_head_dim * precision_byte
+```
+
+MLA 使用 kv_lora_rank (=512) 代替 head_dim (=128)，但注意这是每头的维度，且 MLA 有 qk_rope_head_dim (=64) 的额外 RoPE cache。与标准 MHA 相比，MLA 的 KV cache 通常小得多（因为 kv_lora_rank << num_kv_heads * head_dim）。
+
+#### MLA 吸收模式
+
+吸收模式不影响 KV cache 大小（仅影响计算方式），因此显存占用与非吸收模式相同。
+
+### 12.4 自动 Batch Size 缩减
+
+当 `batch_size * seq_len` 导致显存超出 `memory_capacity` 时，`cluster.cpp` 中的 `checkMemorySize()` 会自动缩减 batch size：
+
+```cpp
+while (total_memory_required > memory_capacity && batch_size > 1) {
+    batch_size /= 2;
+    // 重新计算激活 + KV cache + 权重的总量
+}
+```
+
+---
+
+## 13. Batch Size 与 Sequence Length 的影响分析
+
+### 13.1 对 Linear 层的影响
+
+```
+total_flops = 2.0 * m * k * n
+total_memory = (m*k + k*n + m*n) * precision_byte
+```
+
+- `m = batch_size * num_process_token`（decode 时 num_process_token = 1，所以 m = batch_size）
+- Sequence length 直接影响 prefill 阶段 Linear 层的 m（m = seq_len）
+- Decode 阶段 Linear 层的 m 通常为 batch_size（num_process_token = 1）
+
+### 13.2 对 Attention 层的影响
+
+Scoring 和 Context 的 FLOPs 和访存量都正比于 seq_len：
+
+```
+Scoring FLOPs = 2.0 * m * k * n     # n = seq_len
+Context FLOPs = 2.0 * m * k * n     # k = seq_len
+```
+
+因此 seq_len 翻倍时 attention 的延迟几乎翻倍。
+
+Batch size 的影响更复杂：
+- GPU 执行时，batch size 增加意味着需要处理更多头的 attention（`m * num_heads`）
+- 但 KV cache 在 batch 间共享（GQA/MQA/MLA 的设计目标）
+
+### 13.3 对 MLA 吸收加速比的影响
+
+| Batch Size | Seq Len | 非吸收瓶颈 | 吸收效果 | 加速比 |
+|-----------|---------|-----------|---------|--------|
+| 小 (32) | 短 (2048) | KV 解压延迟低 | 加速有限 | ~2x |
+| 大 (256) | 长 (8192) | KV 解压延迟极高 | 加速显著 | ~15x |
+
+核心原因：**非吸收模式下 KV 解压的访存量随 B 和 L 线性增长，而吸收模式消除了这个 O(B*L) 的访存项**。因此 B 和 L 越大，吸收的相对收益越高。
+
+---
+
+## 14. 相关文档
 
 - 项目整体说明：[docs/PROJECT_OVERVIEW.zh-CN.md](/home/zsy/LLMSimulator/docs/PROJECT_OVERVIEW.zh-CN.md:1)
+- 数学机理与代码对照：[docs/LLM_SIMULATION_MATH.zh-CN.md](/home/zsy/LLMSimulator/docs/LLM_SIMULATION_MATH.zh-CN.md:1)
 - 运行说明：[docs/RUN_GUIDE.zh-CN.md](/home/zsy/LLMSimulator/docs/RUN_GUIDE.zh-CN.md:1)
 - CSV 字段说明：[docs/CSV_OUTPUT_GUIDE.zh-CN.md](/home/zsy/LLMSimulator/docs/CSV_OUTPUT_GUIDE.zh-CN.md:1)
