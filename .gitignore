@@ -1,0 +1,13 @@
+# Build and generated runtime artifacts
+build/
+*.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# LLMSimulator experiment outputs
+experiments/**/data/*.csv
+experiments/**/data/configs/*.yaml
+experiments/**/plots/*.png
+
