@@ -16,33 +16,38 @@ EXP_DIR = Path(__file__).resolve().parent
 DATA_DIR = EXP_DIR / "data"
 PLOT_DIR = EXP_DIR / "plots"
 
-SEQ_LENS = [2048, 8192]
-BATCHES = [32, 64, 128, 256, 512]
+SEQ_LENS = [1024, 4096, 16384]
+BATCH_PER_GPU = [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128]
+NUM_NODE = 4
+NUM_DEVICE = 8
 MODES = {
     "gpu": {"label": "GPU-only", "processor": "GPU", "low_moe": False},
     "gpu_pim": {"label": "GPU+PIM MoE", "processor": "GPU+PIM", "low_moe": True},
 }
 
 
-def result_name(mode: str, seq_len: int, batch: int) -> str:
-    return f"result_mode_{mode}_l{seq_len}_b{batch}.csv"
+def result_name(mode: str, seq_len: int, batch_per_gpu: int) -> str:
+    return f"result_mode_{mode}_l{seq_len}_bpg{batch_per_gpu}.csv"
 
 
 def collect() -> list[dict[str, float | int | str]]:
     rows: list[dict[str, float | int | str]] = []
-    for path in sorted(DATA_DIR.glob("result_mode_*_l*_b*.csv")):
+    paths = sorted(DATA_DIR.glob("result_mode_*_l*_bpg*.csv"))
+    paths.extend(p for p in sorted(DATA_DIR.glob("result_mode_*_l*_b*.csv")) if "_bpg" not in p.stem)
+    for path in paths:
         stem = path.stem
         try:
             mode = stem.split("_l")[0].replace("result_mode_", "")
             rest = stem.split("_l", 1)[1]
-            seq_len = int(rest.split("_b", 1)[0])
-            batch = int(rest.split("_b", 1)[1])
+            marker = "_bpg" if "_bpg" in rest else "_b"
+            seq_len = int(rest.split(marker, 1)[0])
+            batch = int(rest.split(marker, 1)[1])
         except (IndexError, ValueError):
             continue
-        rows.append({"mode": mode, "mode_label": MODES.get(mode, {}).get("label", mode), "seq_len": seq_len, "batch_size": batch, **summarize_csv(path)})
-    by_key = {(r["seq_len"], r["batch_size"], r["mode"]): r for r in rows}
+        rows.append({"mode": mode, "mode_label": MODES.get(mode, {}).get("label", mode), "seq_len": seq_len, "batch_per_gpu": batch, "total_batch": batch * NUM_NODE * NUM_DEVICE, **summarize_csv(path)})
+    by_key = {(r["seq_len"], r["batch_per_gpu"], r["mode"]): r for r in rows}
     for r in rows:
-        base = by_key.get((r["seq_len"], r["batch_size"], "gpu"))
+        base = by_key.get((r["seq_len"], r["batch_per_gpu"], "gpu"))
         if base and float(base["throughput_tps"]):
             r["normalized_throughput"] = float(r["throughput_tps"]) / float(base["throughput_tps"])
         else:
@@ -55,18 +60,35 @@ def plot(rows: list[dict[str, float | int | str]]) -> None:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    import numpy as np
 
     PLOT_DIR.mkdir(parents=True, exist_ok=True)
-    fig, axes = plt.subplots(1, len(SEQ_LENS), figsize=(12, 5), sharey=True)
-    for ax, seq_len in zip(axes, SEQ_LENS):
-        subset = sorted([r for r in rows if r["mode"] == "gpu_pim" and r["seq_len"] == seq_len], key=lambda r: int(r["batch_size"]))
-        if subset:
-            ax.plot([int(r["batch_size"]) for r in subset], [float(r["normalized_throughput"]) for r in subset], "o-", color="#1b9e77")
-        ax.axhline(1.0, color="black", linewidth=0.8, linestyle="--")
-        ax.set_title(f"L={seq_len}")
-        ax.set_xlabel("Batch per system")
-        ax.set_ylabel("Normalized throughput vs GPU-only")
-        ax.grid(True, alpha=0.25)
+    available_seq_lens = sorted({int(r["seq_len"]) for r in rows if r["mode"] == "gpu_pim"})
+    available_batches = sorted({int(r["batch_per_gpu"]) for r in rows if r["mode"] == "gpu_pim"})
+    seq_lens = [v for v in SEQ_LENS if v in available_seq_lens] or available_seq_lens
+    batches = [v for v in BATCH_PER_GPU if v in available_batches] or available_batches
+    heat = np.full((len(seq_lens), len(batches)), np.nan)
+    data = {(int(r["seq_len"]), int(r["batch_per_gpu"])): float(r["normalized_throughput"]) for r in rows if r["mode"] == "gpu_pim"}
+    for i, seq_len in enumerate(seq_lens):
+        for j, batch in enumerate(batches):
+            heat[i, j] = data.get((seq_len, batch), np.nan)
+    if np.isnan(heat).all():
+        raise SystemExit("No GPU+PIM rows found for Figure 14 heatmap.")
+
+    fig, ax = plt.subplots(figsize=(11, 3.8))
+    im = ax.imshow(heat, aspect="auto", cmap="Greys", vmin=np.nanmin(heat), vmax=np.nanmax(heat))
+    for i in range(len(seq_lens)):
+        for j in range(len(batches)):
+            if np.isfinite(heat[i, j]):
+                ax.text(j, i, f"{heat[i, j]:.2f}", ha="center", va="center", fontsize=7, color="black" if heat[i, j] < np.nanmean(heat) else "white")
+    ax.set_xticks(range(len(batches)))
+    ax.set_xticklabels([str(v) for v in batches], rotation=0, fontsize=8)
+    ax.set_yticks(range(len(seq_lens)))
+    ax.set_yticklabels([str(v) for v in seq_lens])
+    ax.set_xlabel("Batch per GPU")
+    ax.set_ylabel("Sequence length")
+    ax.set_title("Figure 14 style: normalized GPU+PIM throughput")
+    fig.colorbar(im, ax=ax, label="Normalized throughput")
     fig.tight_layout()
     out = PLOT_DIR / "figure14_pim.png"
     fig.savefig(out, dpi=200)
@@ -80,8 +102,8 @@ def main() -> None:
     if not (args.run or args.plot or args.all):
         args.all = True
 
-    seq_lens = [2048] if args.quick else SEQ_LENS
-    batches = [32, 64] if args.quick else BATCHES
+    seq_lens = [1024] if args.quick else SEQ_LENS
+    batches = [8, 32] if args.quick else BATCH_PER_GPU
 
     if args.run or args.all:
         DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -89,11 +111,11 @@ def main() -> None:
             for seq_len in seq_lens:
                 for batch in batches:
                     point = SimPoint(
-                        batch_size=batch,
+                        batch_size=batch * NUM_NODE * NUM_DEVICE,
                         seq_len=seq_len,
                         output_len=2,
-                        num_node=4,
-                        num_device=8,
+                        num_node=NUM_NODE,
+                        num_device=NUM_DEVICE,
                         processor_type=meta["processor"],
                         use_low_unit_moe_only=meta["low_moe"],
                         none_expert_tp=1,
@@ -104,7 +126,7 @@ def main() -> None:
                         pim_x=4,
                         pim_op_b=8,
                     )
-                    print(f"[Figure 14] mode={mode} L={seq_len} B={batch}")
+                    print(f"[Figure 14] mode={mode} L={seq_len} B/GPU={batch} total_B={point.batch_size}")
                     run_simulation(point, DATA_DIR, result_name(mode, seq_len, batch), args.timeout, not args.overwrite)
 
     rows = collect()

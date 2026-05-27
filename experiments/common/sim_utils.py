@@ -17,6 +17,9 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BUILD_DIR = REPO_ROOT / "build"
 DEFAULT_CONFIG = BUILD_DIR / "config.yaml"
+DEFAULT_NUM_NODE = 4
+DEFAULT_NUM_DEVICE = 8
+DEFAULT_NUM_GPUS = DEFAULT_NUM_NODE * DEFAULT_NUM_DEVICE
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -45,6 +48,14 @@ def boolify_config(cfg: dict[str, Any]) -> dict[str, Any]:
         return v
 
     return convert(cfg)
+
+
+def num_gpus(num_node: int = DEFAULT_NUM_NODE, num_device: int = DEFAULT_NUM_DEVICE) -> int:
+    return num_node * num_device
+
+
+def system_batch(batch_per_gpu: int, num_node: int = DEFAULT_NUM_NODE, num_device: int = DEFAULT_NUM_DEVICE) -> int:
+    return batch_per_gpu * num_gpus(num_node, num_device)
 
 
 @dataclass(frozen=True)
@@ -264,6 +275,10 @@ def attention_breakdown_from_csv(path: Path) -> dict[str, float]:
     )
     score_context = avg.get("atten_sum", 0.0) + avg.get("atten_gen", 0.0)
     out_proj = avg.get("o_proj", 0.0)
+    # Figure 6 is an attention-block layer breakdown. The CSV-level
+    # `communication` stat is a global communication bucket collected from
+    # Comm stamps and should not be folded into the attention-layer "Etc"
+    # bucket here; doing so makes reordered MLA look dominated by gray bars.
     etc = (
         avg.get("qkvgen", 0.0)
         + avg.get("q_down_proj", 0.0)
@@ -274,7 +289,6 @@ def attention_breakdown_from_csv(path: Path) -> dict[str, float]:
         + avg.get("rope", 0.0)
         + avg.get("layernorm", 0.0)
         + avg.get("residual", 0.0)
-        + avg.get("communication", 0.0)
     )
     return {
         "kv_decompress": kv_decompress,

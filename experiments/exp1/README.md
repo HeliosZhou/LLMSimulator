@@ -28,13 +28,13 @@ python3 experiments/exp1/run_attention_breakdown.py
 | 模型 | `deepseekV3` |
 | GPU | `B200` |
 | 阶段 | decode（`decode_mode=true`） |
-| Batch size | `32, 64, 128, 256` |
+| Batch per GPU | `32, 64, 128, 256` |
 | Sequence length | `2048, 4096, 8192` |
 | 是否重排 | `on, off` |
-| 精度 | 1 byte |
+| 精度 | BF16 / 2 byte |
 | 迭代次数 | 3 |
 
-论文使用 32 张 B200 GPU。当前脚本保留相同的趋势性 sweep，并使用工程中可运行的 LLMSimulator 配置；如需完全按论文系统规模运行，可在脚本中调整 `num_node`、`num_device` 等参数。
+论文使用 32 张 B200 GPU。当前脚本按 `4 node x 8 device` 配置 32 张 B200，并将图中的 batch 解释为 per-GPU batch；运行时实际 `max_batch_size = batch_per_gpu * 32`。
 
 ## 运行方式
 

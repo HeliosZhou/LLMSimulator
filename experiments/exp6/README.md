@@ -26,15 +26,19 @@ PIM 参数：
 | `pim_x` | `4` |
 | `pim_op_b` | `8` |
 
+这对应论文 Figure 14 中 Duplex-style PIM：MoE execution 由 PIM 处理，PIM 的 ridge point 约为 8，并使用约 4x GPU HBM 带宽。
+
 默认 sweep：
 
 | 参数 | 取值 |
 | --- | --- |
 | 模型 | `deepseekV3` |
 | GPU 系统 | 32 B200 GPU |
-| Sequence length | `2048, 8192` |
-| Batch size | `32, 64, 128, 256, 512` |
+| Sequence length | `1024, 4096, 16384` |
+| Batch per GPU | `8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128` |
 | 阶段 | decode |
+
+论文 Figure 14 是 normalized throughput heatmap，横轴为 `Batch per GPU`，纵轴为 sequence length。脚本会转换为模拟器系统总 batch：`max_batch_size = batch_per_gpu * 32`。
 
 ## 运行方式
 
@@ -46,8 +50,10 @@ python3 experiments/exp6/run_pim.py --plot
 
 ## 输出
 
-- `data/result_mode_*_l*_b*.csv`
+- `data/result_mode_*_l*_bpg*.csv`
 - `data/summary_pim.csv`
 - `plots/figure14_pim.png`
 
-绘图展示同一 sequence length 和 batch size 下，GPU+PIM 相对 GPU-only 的 normalized throughput。
+绘图展示同一 sequence length 和 batch per GPU 下，GPU+PIM 相对 GPU-only 的 normalized throughput。
+
+脚本也会读取旧命名的 `data/result_mode_*_l*_b*.csv`；新运行会按 `bpg` 命名，避免把 batch per GPU 和系统总 batch 混淆。

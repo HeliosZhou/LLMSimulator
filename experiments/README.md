@@ -1,6 +1,6 @@
 # 《Rethinking LLM Inference Bottlenecks》复现说明
 
-本目录用于组织论文《Rethinking LLM Inference Bottlenecks: Insights from Latent Attention and Mixture-of-Experts》中可复现的图表与实验。为了尽量做到与论文图号一一对应，当前目录同时包含两类内容：
+本目录用于组织论文《Rethinking LLM Inference Bottlenecks: Insights from Latent Attention and Mixture-of-Experts》（arXiv:2507.15465v3, 2026-01-29）中可复现的图表与实验。为了尽量做到与论文图号一一对应，当前目录同时包含两类内容：
 
 - **模拟器实验**：调用 LLMSimulator 运行不同模型、batch、sequence length、并行度、interconnect 或 PIM 配置。
 - **解析生成图**：不运行模拟器，而是根据论文参数、模型规模和解析公式生成图，例如 roofline 和 memory footprint。
@@ -26,6 +26,13 @@
 | Table I-V | 已在文档中说明 | - | 不运行 | 硬件参数、模型符号、公式和附录表格 |
 
 因此，除 Figure 1/5/7 这类纯结构示意图和 Table I-V 这类表格外，论文中的主要结果图都已经配置了对应目录。
+
+## 对照论文后的复现边界
+
+- 论文 §VI 使用 B200、BF16、decode-only、prefill/decode disaggregation、默认 5th-gen NVLink（900GB/s），并在特别说明时使用 InfiniBand XDR（100GB/s）。模拟器实验均按这些口径设置。
+- `exp1` 的 Figure 6 复现已经人工确认正确；其它实验已按论文图轴和实验设定校准脚本/README，但数值仍建议用完整 `--run --overwrite` 重新生成后再逐图核验。
+- `exp7` 和 `exp8` 不是 LLMSimulator 逐点仿真，而是按论文 Table I、正文参数与公式生成的解析复现图；它们用于复现图形结构和主要趋势，不声称重现实机测量点。
+- 部分目录中已有早期 CSV 使用旧文件名（例如 `_b` 而不是 `_tb`/`_bpg`）。脚本的 `collect()` 已兼容旧命名，新的完整复现实验会使用 README 中列出的新命名。
 
 ## 目录结构
 

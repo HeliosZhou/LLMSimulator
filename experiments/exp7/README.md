@@ -11,7 +11,7 @@ Figure 3 使用 roofline 图说明不同层的 arithmetic intensity（ArI）和�
 
 ## 实验性质
 
-本实验是**解析图生成**，不是运行 LLMSimulator。脚本根据论文 Table I 的硬件参数和论文中的代表性 ArI 结论生成 roofline 风格图，用于对应 Figure 3 的可视化。
+本实验是**解析图生成**，不是运行 LLMSimulator。脚本根据论文 Figure 3/Table I 的硬件参数和代表性 ArI 结论生成 roofline 风格图，用于对应 Figure 3 的可视化。
 
 ## 脚本
 
@@ -26,7 +26,7 @@ python3 experiments/exp7/run_roofline.py
 | 硬件峰值 | 989.5 TFLOPS |
 | 内存带宽 | 4800 GB/s |
 | Ridge point | 约 206 Op/B |
-| 代表点 | MHA、GQA、MLA、FFN、MoE |
+| 代表点 | MHA、GQA、MLA、FFN B=64/1K、MoE B=64/1K |
 
 ## 运行方式
 

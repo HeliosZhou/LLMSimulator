@@ -31,9 +31,11 @@ python3 experiments/exp0/run_tpot_throughput.py
 | --- | --- |
 | GPU 系统 | 32 B200 GPU（`num_node=4`, `num_device=8`） |
 | Sequence length | `2048, 8192` |
-| Batch size | `32, 64, 128, 256` |
+| Batch per GPU | GPT-3: `1, 4, 16, 64, 256`; Llama4/DeepSeek-R1: `32, 64, 128, 256` |
 | 精度 | 2 bytes，近似 BF16 |
 | 阶段 | decode |
+
+论文 Figure 2 的横轴标注为 `Batch per GPU`。脚本会把它转换为模拟器需要的系统总 batch：`max_batch_size = batch_per_gpu * 32`。
 
 ## 运行方式
 
@@ -45,7 +47,7 @@ python3 experiments/exp0/run_tpot_throughput.py --plot
 
 ## 输出
 
-- `data/result_model_*_l*_b*.csv`
+- `data/result_model_*_l*_bpg*.csv`
 - `data/summary_tpot_throughput.csv`
 - `plots/figure2_tpot_throughput.png`
 

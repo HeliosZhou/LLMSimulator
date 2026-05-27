@@ -9,25 +9,28 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from common.sim_utils import SimPoint, add_common_args, attention_breakdown_from_csv, run_simulation, write_summary_csv  # noqa: E402
+from common.sim_utils import DEFAULT_NUM_DEVICE, DEFAULT_NUM_NODE, SimPoint, add_common_args, attention_breakdown_from_csv, run_simulation, write_summary_csv  # noqa: E402
 
 
 EXP_DIR = Path(__file__).resolve().parent
 DATA_DIR = EXP_DIR / "data"
 PLOT_DIR = EXP_DIR / "plots"
 
-BATCHES = [32, 64, 128]
+TOTAL_BATCHES = [32, 64, 128]
 TP_DEGREES = [1, 2, 4, 8]
 SEQ_LEN = 4096
+PRECISION_BYTE = 2
 
 
 def result_name(batch: int, tp: int, absorb: str) -> str:
-    return f"result_b{batch}_l{SEQ_LEN}_tp{tp}_absorb_{absorb}.csv"
+    return f"result_32gpu_bf16_b{batch}_l{SEQ_LEN}_tp{tp}_absorb_{absorb}.csv"
 
 
 def collect() -> list[dict[str, float | int | str]]:
     rows: list[dict[str, float | int | str]] = []
-    for path in sorted(DATA_DIR.glob("result_b*_l*_tp*_absorb_*.csv")):
+    paths = sorted(DATA_DIR.glob("result_32gpu_bf16_b*_l*_tp*_absorb_*.csv"))
+    paths.extend(p for p in sorted(DATA_DIR.glob("result_b*_l*_tp*_absorb_*.csv")) if not p.stem.startswith("result_32gpu_bf16_"))
+    for path in paths:
         parts = path.stem.split("_")
         try:
             batch = int(next(p[1:] for p in parts if p.startswith("b")))
@@ -37,7 +40,7 @@ def collect() -> list[dict[str, float | int | str]]:
         except (StopIteration, ValueError):
             continue
         b = attention_breakdown_from_csv(path)
-        rows.append({"batch_size": batch, "seq_len": seq_len, "tp_degree": tp, "absorb": absorb, **b})
+        rows.append({"total_batch": batch, "seq_len": seq_len, "tp_degree": tp, "absorb": absorb, **b})
     return rows
 
 
@@ -48,14 +51,14 @@ def plot(rows: list[dict[str, float | int | str]]) -> None:
     import matplotlib.pyplot as plt
 
     PLOT_DIR.mkdir(parents=True, exist_ok=True)
-    data = {(r["batch_size"], r["tp_degree"], r["absorb"]): float(r["total"]) / 1e6 for r in rows}
+    data = {(r["total_batch"], r["tp_degree"], r["absorb"]): float(r["total"]) / 1e6 for r in rows}
 
     fig, ax = plt.subplots(figsize=(8, 5))
     styles = {"on": ("o-", "w/ reordering"), "off": ("s--", "w/o reordering")}
-    for batch in BATCHES:
+    for batch in TOTAL_BATCHES:
         for absorb, (style, label) in styles.items():
             y = [data.get((batch, tp, absorb), float("nan")) for tp in TP_DEGREES]
-            ax.plot(TP_DEGREES, y, style, label=f"B={batch}, {label}", linewidth=1.8, markersize=5)
+            ax.plot(TP_DEGREES, y, style, label=f"Total B={batch}, {label}", linewidth=1.8, markersize=5)
 
     ax.set_yscale("log")
     ax.set_xticks(TP_DEGREES)
@@ -77,7 +80,7 @@ def main() -> None:
     if not (args.run or args.plot or args.all):
         args.all = True
 
-    batches = [32] if args.quick else BATCHES
+    batches = [32] if args.quick else TOTAL_BATCHES
     tps = [1, 2] if args.quick else TP_DEGREES
 
     if args.run or args.all:
@@ -91,10 +94,11 @@ def main() -> None:
                         use_absorb=use_absorb,
                         none_expert_tp=tp,
                         expert_tp=1,
-                        num_node=1,
-                        num_device=8,
+                        num_node=DEFAULT_NUM_NODE,
+                        num_device=DEFAULT_NUM_DEVICE,
+                        precision_byte=PRECISION_BYTE,
                     )
-                    print(f"[Figure 8] B={batch} TP={tp} absorb={absorb_label}")
+                    print(f"[Figure 8] total_B={batch} TP={tp} absorb={absorb_label}")
                     run_simulation(point, DATA_DIR, result_name(batch, tp, absorb_label), args.timeout, not args.overwrite)
 
     rows = collect()

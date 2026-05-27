@@ -20,9 +20,13 @@ python3 experiments/exp2/run_tp_attention.py
 | GPU | `B200` |
 | 阶段 | decode |
 | Sequence length | `4096` |
-| Batch size | `32, 64, 128` |
+| GPU 系统 | 32 B200 GPU（`num_node=4`, `num_device=8`） |
+| Total batch | `32, 64, 128` |
 | TP degree | `1, 2, 4, 8`，通过 `none_expert_tensor_degree` 设置 |
 | 是否重排 | `on, off` |
+| 精度 | BF16 / 2 bytes |
+
+论文 Figure 8 的横轴标注为 `Total batch`，不是 `Batch per GPU`。脚本保持 `max_batch_size=32/64/128`，但按论文实验设置使用 32 B200 GPU。
 
 ## 运行方式
 
@@ -34,7 +38,7 @@ python3 experiments/exp2/run_tp_attention.py --plot
 
 ## 输出
 
-- `data/result_b*_l4096_tp*_absorb_*.csv`
+- `data/result_32gpu_bf16_b*_l4096_tp*_absorb_*.csv`
 - `data/summary_tp_attention.csv`
 - `plots/figure8_tp_attention.png`
 

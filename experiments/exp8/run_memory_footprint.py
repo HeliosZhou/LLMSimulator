@@ -16,23 +16,88 @@ TOKENS = 8_000_000
 BYTES_PER_PARAM = 2
 
 MODELS = [
-    {"model": "GPT-3", "total_params_b": 175.0, "activated_params_b": 175.0, "kv_per_token_bytes": 4.5 * 1024 * 1024},
-    {"model": "Llama4-Maverick", "total_params_b": 400.0, "activated_params_b": 17.0, "kv_per_token_bytes": 192.0 * 1024},
-    {"model": "DeepSeek-R1", "total_params_b": 671.0, "activated_params_b": 37.0, "kv_per_token_bytes": 68.6 * 1024},
+    {
+        "model": "GPT-3",
+        "hidden_dim": 12288,
+        "num_layers": 96,
+        "num_heads": 96,
+        "num_kv_heads": 96,
+        "total_params_b": 175.0,
+        "activated_params_b": 175.0,
+        "kv_per_token_bytes": 4.5 * 1024 * 1024,
+    },
+    {
+        "model": "Llama4-Maverick",
+        "hidden_dim": 5120,
+        "num_layers": 48,
+        "num_heads": 40,
+        "num_kv_heads": 8,
+        "total_params_b": 400.0,
+        "activated_params_b": 17.0,
+        "kv_per_token_bytes": 192.0 * 1024,
+    },
+    {
+        "model": "DeepSeek-R1",
+        "hidden_dim": 7168,
+        "num_layers": 60,
+        "num_heads": 128,
+        "num_kv_heads": 128,
+        "q_lora_rank": 1536,
+        "kv_lora_rank": 512,
+        "qk_rope_head_dim": 64,
+        "total_params_b": 671.0,
+        "activated_params_b": 37.0,
+        "kv_per_token_bytes": 68.6 * 1024,
+    },
 ]
+
+
+def attention_params_b(item: dict[str, float | int | str]) -> float:
+    hidden = int(item["hidden_dim"])
+    layers = int(item["num_layers"])
+    num_heads = int(item["num_heads"])
+    num_kv_heads = int(item["num_kv_heads"])
+    head_dim = hidden // num_heads
+    if "kv_lora_rank" in item:
+        q_lora = int(item["q_lora_rank"])
+        kv_lora = int(item["kv_lora_rank"])
+        rope = int(item["qk_rope_head_dim"])
+        per_layer = (
+            hidden * q_lora
+            + q_lora * num_heads * head_dim
+            + hidden * (kv_lora + rope)
+            + kv_lora * num_heads * head_dim * 2
+            + hidden * hidden
+        )
+    else:
+        per_layer = hidden * hidden + 2 * hidden * num_kv_heads * head_dim + hidden * hidden
+    return per_layer * layers / 1e9
 
 
 def build_rows() -> list[dict[str, float | str]]:
     rows: list[dict[str, float | str]] = []
     for item in MODELS:
-        total_weight_gb = float(item["total_params_b"]) * 1e9 * BYTES_PER_PARAM / 1e9
-        activated_weight_gb = float(item["activated_params_b"]) * 1e9 * BYTES_PER_PARAM / 1e9
+        attn_params_b = attention_params_b(item)
+        total_params_b = float(item["total_params_b"])
+        activated_params_b = float(item["activated_params_b"])
+        activated_attn_params_b = min(attn_params_b, activated_params_b)
+        activated_ffn_moe_params_b = max(0.0, activated_params_b - activated_attn_params_b)
+        attention_weight_gb = attn_params_b * BYTES_PER_PARAM
+        ffn_moe_weight_gb = max(0.0, total_params_b - attn_params_b) * BYTES_PER_PARAM
+        activated_attention_gb = activated_attn_params_b * BYTES_PER_PARAM
+        activated_ffn_moe_gb = activated_ffn_moe_params_b * BYTES_PER_PARAM
+        total_weight_gb = attention_weight_gb + ffn_moe_weight_gb
+        activated_weight_gb = activated_attention_gb + activated_ffn_moe_gb
         kv_total_gb = float(item["kv_per_token_bytes"]) * TOKENS / 1e9
         rows.append(
             {
                 "model": str(item["model"]),
-                "total_params_b": float(item["total_params_b"]),
-                "activated_params_b": float(item["activated_params_b"]),
+                "total_params_b": total_params_b,
+                "activated_params_b": activated_params_b,
+                "attention_weight_gb": attention_weight_gb,
+                "ffn_moe_weight_gb": ffn_moe_weight_gb,
+                "activated_attention_weight_gb": activated_attention_gb,
+                "activated_ffn_moe_weight_gb": activated_ffn_moe_gb,
                 "activated_weight_gb": activated_weight_gb,
                 "total_weight_gb": total_weight_gb,
                 "kv_per_token_kb": float(item["kv_per_token_bytes"]) / 1024.0,
@@ -60,34 +125,37 @@ def plot(rows: list[dict[str, float | str]]) -> None:
 
     PLOT_DIR.mkdir(parents=True, exist_ok=True)
     labels = [str(r["model"]) for r in rows]
-    x = np.arange(len(labels))
-    width = 0.36
+    y = np.arange(len(labels))
+    height = 0.32
 
-    activated = [float(r["activated_weight_gb"]) for r in rows]
-    total_weight = [float(r["total_weight_gb"]) for r in rows]
+    act_attn = [float(r["activated_attention_weight_gb"]) for r in rows]
+    act_ffn = [float(r["activated_ffn_moe_weight_gb"]) for r in rows]
+    total_attn = [float(r["attention_weight_gb"]) for r in rows]
+    total_ffn = [float(r["ffn_moe_weight_gb"]) for r in rows]
     kv = [float(r["kv_for_8m_tokens_gb"]) for r in rows]
 
-    fig, ax = plt.subplots(figsize=(9, 5.5))
-    ax.bar(x - width / 2, activated, width, label="Activated parameters", color="#1b9e77", edgecolor="black", linewidth=0.4)
-    ax.bar(x + width / 2, total_weight, width, label="Total weights", color="#7570b3", edgecolor="black", linewidth=0.4)
-    ax.bar(x + width / 2, kv, width, bottom=total_weight, label="KV cache for 8M tokens", color="#d95f02", edgecolor="black", linewidth=0.4)
+    fig, ax = plt.subplots(figsize=(10, 5.5))
+    ax.barh(y - height / 2, act_attn, height, label="Attention weight", color="#d7191c", edgecolor="black", linewidth=0.4)
+    ax.barh(y - height / 2, act_ffn, height, left=act_attn, label="FFN/MoE weight", color="#2c7bb6", edgecolor="black", linewidth=0.4)
+    ax.barh(y + height / 2, total_attn, height, color="#d7191c", edgecolor="black", linewidth=0.4)
+    total_attn_ffn = [a + b for a, b in zip(total_attn, total_ffn)]
+    ax.barh(y + height / 2, total_ffn, height, left=total_attn, color="#2c7bb6", edgecolor="black", linewidth=0.4)
+    ax.barh(y + height / 2, kv, height, left=total_attn_ffn, label="KV cache for 8M tokens", color="#f2f2f2", edgecolor="black", linewidth=0.4)
 
     for i, row in enumerate(rows):
         ax.annotate(
             f"{float(row['kv_per_token_kb']):.1f}KB/token",
-            (x[i] + width / 2, total_weight[i] + kv[i]),
-            ha="center",
-            va="bottom",
+            (total_attn_ffn[i] + kv[i], y[i] + height / 2),
+            ha="left",
+            va="center",
             fontsize=8,
-            rotation=0,
         )
 
-    ax.set_yscale("log")
-    ax.set_ylabel("Memory footprint (GB, log scale)")
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels)
+    ax.set_xlabel("Memory footprint (GB)")
+    ax.set_yticks(y)
+    ax.set_yticklabels(labels)
     ax.set_title("Figure 4 style memory footprint comparison")
-    ax.grid(axis="y", which="both", alpha=0.25)
+    ax.grid(axis="x", alpha=0.25)
     ax.legend(fontsize=8)
     fig.tight_layout()
     out = PLOT_DIR / "figure4_memory_footprint.png"

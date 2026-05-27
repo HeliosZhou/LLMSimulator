@@ -5,14 +5,14 @@
 Figure 4 对比 GPT-3、Llama4-Maverick 和 DeepSeek-R1 在 BF16 下的内存占用：
 
 - 每 token 实际访问/计算的 activated parameters
-- 完整模型参数占用
+- 完整模型参数占用，并拆分 attention weights 与 FFN/MoE weights
 - 8M tokens 对应的 KV cache 占用
 
 核心结论是：DeepSeek-R1 虽然总参数量更大，但 MLA 显著缩小 KV cache，MoE 又减少每 token 激活参数量，因此可以支持更大的 batch。
 
 ## 实验性质
 
-本实验是**解析统计图生成**，不是运行 LLMSimulator。脚本使用论文正文给出的关键数值和常见模型参数规模生成 Figure 4 风格图。
+本实验是**解析统计图生成**，不是运行 LLMSimulator。脚本使用论文正文给出的总参数、激活参数、KV cache/token 数值，并用模型维度公式估算 attention weight，剩余参数归入 FFN/MoE weight。
 
 ## 脚本
 

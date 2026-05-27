@@ -19,12 +19,11 @@ RIDGE = PEAK_TFLOPS * 1000.0 / MEM_BW_GBPS
 POINTS = [
     {"name": "MHA core attention", "ari": 1.0, "kind": "attention"},
     {"name": "GQA core attention", "ari": 5.0, "kind": "attention"},
-    {"name": "MLA core attention", "ari": 100.0, "kind": "attention"},
-    {"name": "MLA + FlashMLA", "ari": 200.0, "kind": "attention"},
+    {"name": "MLA core attention", "ari": 200.0, "kind": "attention"},
     {"name": "FFN B=64", "ari": 64.0, "kind": "ffn"},
-    {"name": "FFN B=1K", "ari": 1000.0, "kind": "ffn"},
+    {"name": "FFN B=1K", "ari": 512.0, "kind": "ffn"},
     {"name": "MoE B=64", "ari": 16.0, "kind": "moe"},
-    {"name": "MoE B=1K", "ari": 256.0, "kind": "moe"},
+    {"name": "MoE B=1K", "ari": 64.0, "kind": "moe"},
 ]
 
 
