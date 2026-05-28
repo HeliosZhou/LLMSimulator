@@ -385,8 +385,8 @@ void Cluster::exportToCSV(std::ofstream &csv, std::vector<Stat> &stat_list) {
         << std::to_string(temp.sum_seq) << "," << std::to_string(temp.gen_seq)
         << "," << std::to_string(temp.average_seq_len) << ","
         << std::to_string(temp.sum_attention_opb) << ","
-        << std::to_string(temp.qkv_gen) << "," 
-        << std::to_string(temp.q_down_proj) << "," 
+        << std::to_string(temp.qkv_gen) << ","
+        << std::to_string(temp.q_down_proj) << ","
         << std::to_string(temp.kv_down_proj) << ","
         << std::to_string(temp.kr_proj) << ","
         << std::to_string(temp.q_up_proj) << ","
@@ -416,7 +416,13 @@ void Cluster::exportToCSV(std::ofstream &csv, std::vector<Stat> &stat_list) {
         << std::to_string(temp.Attn_COMP_energy) << ","
         << std::to_string(temp.MoE_DRAM_energy) << ","
         << std::to_string(temp.MoE_COMP_energy) << ","
-        << std::to_string(temp.isOOM) << std::endl;
+        << std::to_string(temp.isOOM) << ","
+        << std::to_string(temp.memory_capacity) << ","
+        << std::to_string(temp.activation_size) << ","
+        << std::to_string(temp.weight_size) << ","
+        << std::to_string(temp.kv_cache_size) << ","
+        << std::to_string(temp.total_memory_used) << ","
+        << std::to_string(temp.memory_utilization) << std::endl;
   }
   stat_list.resize(0);
 }
@@ -432,7 +438,8 @@ std::vector<Stat> Cluster::runIteration(int iter, std::string file_name) {
          "q_up_proj,qr_proj,kv_up_proj,tr_k_up_proj,v_up_proj,atten_sum,atten_gen,"
          "o_proj,ffn,expert_ffn,communication,rope,layernorm,residual,act_energy,read_energy,write_"
          "energy,all_act_energy,all_read_energy,all_write_energy,mac_energy,"
-         "total_energy,fc_dram,fc_comp,attn_dram,attn_comp,moe_dram,moe_comp,OOM"
+         "total_energy,fc_dram,fc_comp,attn_dram,attn_comp,moe_dram,moe_comp,OOM,"
+         "memory_capacity,activation_size,weight_size,kv_cache_size,total_memory_used,memory_utilization"
       << std::endl;
 
   std::vector<Stat> stat_list;
@@ -679,6 +686,131 @@ void Cluster::setStat(Stat &stat) {
       stat.is_mixed = 0;
     }
   }
+
+  // Memory tracking
+  Device::Ptr device = get_device(0);
+  auto module = module_map.at(0).at("::LLM");
+  auto size_vector = module->get_size();
+
+  int ne_tp_dg = device->model_config.ne_tp_dg;
+  int e_tp_dg = device->model_config.e_tp_dg;
+  int num_total_device = device->config.num_device * device->config.num_node;
+  int num_routed_expert_per_device = device->model_config.num_routed_expert * e_tp_dg / num_total_device;
+
+  int batch_size_per_dp = scheduler->batch_size_per_dp;
+  int total_batch_size = scheduler->total_batch_size;
+  int expert_batch_size = device->model_config.expert_freq ? total_batch_size * device->model_config.top_k / device->model_config.num_routed_expert : 0;
+
+  int input_len = device->model_config.input_len;
+  int total_len = device->model_config.input_len + device->model_config.output_len;
+
+  int hidden_dim = device->model_config.hidden_dim;
+  int q_lora_rank = device->model_config.q_lora_rank;
+  int kv_lora_rank = device->model_config.kv_lora_rank;
+  int qk_rope_head_dim = device->model_config.qk_rope_head_dim;
+  int head_dim = device->model_config.head_dim;
+  int num_heads = device->model_config.num_heads;
+  int expert_intermediate_dim = device->model_config.expert_intermediate_dim;
+
+  long long activation_size = 0;
+  if(config.decode_mode){
+    if(device->model_config.use_absorb){
+      activation_size =
+        ((batch_size_per_dp * hidden_dim) +
+        (batch_size_per_dp * q_lora_rank) +
+        (batch_size_per_dp * kv_lora_rank) +
+        (batch_size_per_dp * qk_rope_head_dim) +
+        (batch_size_per_dp * (3.0 * qk_rope_head_dim + head_dim) * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * num_heads * kv_lora_rank / ne_tp_dg) +
+        (batch_size_per_dp * 2.0 * num_heads * total_len / ne_tp_dg) +
+        (batch_size_per_dp * num_heads * kv_lora_rank / ne_tp_dg) +
+        (batch_size_per_dp * num_heads * head_dim / ne_tp_dg) +
+        (batch_size_per_dp * hidden_dim) +
+        (num_routed_expert_per_device + device->model_config.num_shared_expert) *
+        ((expert_batch_size * 2.0 * expert_intermediate_dim) +
+        (expert_batch_size * expert_intermediate_dim) +
+        (expert_batch_size * hidden_dim))) *
+        device->model_config.precision_byte;
+    }
+    else if(device->model_config.compressed_kv){
+      activation_size =
+        ((batch_size_per_dp * hidden_dim) +
+        (batch_size_per_dp * q_lora_rank) +
+        (batch_size_per_dp * kv_lora_rank) +
+        (batch_size_per_dp * qk_rope_head_dim) +
+        (batch_size_per_dp * (3.0 * qk_rope_head_dim + head_dim) * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * 2.0 * total_len * head_dim * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * 2.0 * total_len * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * num_heads * head_dim / ne_tp_dg) +
+        (batch_size_per_dp * hidden_dim) +
+        (num_routed_expert_per_device + device->model_config.num_shared_expert) *
+        (2.0 * (expert_batch_size * expert_intermediate_dim) +
+        (expert_batch_size * expert_intermediate_dim) +
+        (expert_batch_size * hidden_dim))) *
+        device->model_config.precision_byte;
+    }
+    else{
+      activation_size =
+        ((batch_size_per_dp * hidden_dim) +
+        (batch_size_per_dp * q_lora_rank) +
+        (batch_size_per_dp * kv_lora_rank) +
+        (batch_size_per_dp * qk_rope_head_dim) +
+        (batch_size_per_dp * (3.0 * qk_rope_head_dim + head_dim) * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * 2.0 * head_dim * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * 2.0 * total_len * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * num_heads * head_dim / ne_tp_dg) +
+        (batch_size_per_dp * hidden_dim) +
+        (num_routed_expert_per_device + device->model_config.num_shared_expert) *
+        (2.0 * (expert_batch_size * expert_intermediate_dim) +
+        (expert_batch_size * expert_intermediate_dim) +
+        (expert_batch_size * hidden_dim))) *
+        device->model_config.precision_byte;
+    }
+  }
+  else{
+    if(device->model_config.use_absorb){
+      activation_size =
+        ((batch_size_per_dp * input_len * hidden_dim) +
+        (batch_size_per_dp * input_len * q_lora_rank) +
+        (batch_size_per_dp * input_len * kv_lora_rank) +
+        (batch_size_per_dp * input_len * qk_rope_head_dim) +
+        (batch_size_per_dp * input_len * (3.0 * qk_rope_head_dim + head_dim) * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * input_len * num_heads * kv_lora_rank / ne_tp_dg) +
+        2.0 * (batch_size_per_dp * input_len * num_heads * input_len / ne_tp_dg) +
+        (batch_size_per_dp * input_len * num_heads * kv_lora_rank / ne_tp_dg) +
+        (batch_size_per_dp * input_len * num_heads * head_dim / ne_tp_dg) +
+        (batch_size_per_dp * input_len * hidden_dim) +
+        (num_routed_expert_per_device + device->model_config.num_shared_expert) *
+        (2.0 * (expert_batch_size * input_len * expert_intermediate_dim) +
+        (expert_batch_size * input_len * expert_intermediate_dim) +
+        (expert_batch_size * input_len * hidden_dim))) *
+        device->model_config.precision_byte;
+    }
+    else{
+      activation_size =
+        ((batch_size_per_dp * input_len * hidden_dim) +
+        (batch_size_per_dp * input_len * q_lora_rank) +
+        (batch_size_per_dp * input_len * kv_lora_rank) +
+        (batch_size_per_dp * input_len * qk_rope_head_dim) +
+        (batch_size_per_dp * input_len * (3.0 * qk_rope_head_dim + head_dim) * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * input_len * 2.0 * (head_dim) * num_heads / ne_tp_dg) +
+        2.0 * (batch_size_per_dp * input_len * input_len * num_heads / ne_tp_dg) +
+        (batch_size_per_dp * input_len * num_heads * head_dim / ne_tp_dg) +
+        (batch_size_per_dp * input_len * hidden_dim) +
+        (num_routed_expert_per_device + device->model_config.num_shared_expert) *
+        (2.0 * (expert_batch_size * input_len * expert_intermediate_dim) +
+        (expert_batch_size * input_len * expert_intermediate_dim) +
+        (expert_batch_size * input_len * hidden_dim))) *
+        device->model_config.precision_byte;
+    }
+  }
+
+  stat.memory_capacity = config.memory_capacity;
+  stat.activation_size = activation_size;
+  stat.weight_size = size_vector.at(1);
+  stat.kv_cache_size = size_vector.at(2);
+  stat.total_memory_used = activation_size + size_vector.at(1) + size_vector.at(2);
+  stat.memory_utilization = (stat.total_memory_used / stat.memory_capacity) * 100.0;
 }
 
 void Cluster::setTimeBreakDown(Stat &stat) {

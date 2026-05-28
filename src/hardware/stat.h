@@ -68,6 +68,14 @@ struct Stat {
 
   bool isOOM = false;
 
+  // Memory tracking
+  double memory_capacity = 0;      // Total memory capacity per device (bytes)
+  double activation_size = 0;      // Activation memory (bytes)
+  double weight_size = 0;          // Model weight memory (bytes)
+  double kv_cache_size = 0;        // KV cache memory (bytes)
+  double total_memory_used = 0;    // Total memory used (bytes)
+  double memory_utilization = 0;   // Memory utilization percentage
+
   int is_mixed = 0; // wheter it is mixed stage or not
   int split = 0;
   std::string type;  // t2t, t2ft, e2e

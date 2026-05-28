@@ -95,6 +95,20 @@ int main(int argc, char *argv[]) {
   system_config.num_node = num_node;
   system_config.num_device = num_device;
 
+  // Optional memory overrides (B/s and bytes)
+  if (config["system"]["memory_bandwidth"]) {
+    system_config.memory_bandwidth =
+        config["system"]["memory_bandwidth"].as<double>();
+    system_config.logic_memory_bandwidth =
+        system_config.memory_bandwidth * system_config.logic_x;
+    system_config.pim_memory_bandwidth =
+        system_config.memory_bandwidth * system_config.pim_x;
+  }
+  if (config["system"]["memory_capacity"]) {
+    system_config.memory_capacity =
+        config["system"]["memory_capacity"].as<double>();
+  }
+
   if (config["system"]["logic_x"]) {
     system_config.logic_x = config["system"]["logic_x"].as<int>();
     system_config.logic_memory_bandwidth =
