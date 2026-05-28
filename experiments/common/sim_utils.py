@@ -151,7 +151,7 @@ def build_config(point: SimPoint, output_dir: Path, base_config: Path = DEFAULT_
 
     cfg["log"]["print_log"] = False
     cfg["log"]["export_gantt"] = False
-    cfg["log"]["output_directory"] = str(output_dir)
+    cfg["log"]["output_directory"] = str(output_dir.resolve())
     return cfg
 
 
@@ -174,7 +174,7 @@ def run_simulation(
 
     before = {p.resolve() for p in output_dir.glob("*.csv")}
     result = subprocess.run(
-        ["./run", str(config_path)],
+        ["./run", str(config_path.resolve())],
         cwd=BUILD_DIR,
         capture_output=True,
         text=True,
