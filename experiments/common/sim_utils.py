@@ -95,6 +95,8 @@ class SimPoint:
     logic_op_b: float | None = None
     pim_x: int | None = None
     pim_op_b: float | None = None
+    memory_bandwidth: float | None = None
+    memory_capacity: float | None = None
 
 
 def build_config(point: SimPoint, output_dir: Path, base_config: Path = DEFAULT_CONFIG) -> dict[str, Any]:
@@ -111,6 +113,10 @@ def build_config(point: SimPoint, output_dir: Path, base_config: Path = DEFAULT_
         value = getattr(point, key)
         if value is not None:
             cfg["system"][key] = value
+    if point.memory_bandwidth is not None:
+        cfg["system"]["memory_bandwidth"] = point.memory_bandwidth
+    if point.memory_capacity is not None:
+        cfg["system"]["memory_capacity"] = point.memory_capacity
     cfg["system"]["distribution"]["expert_tensor_degree"] = point.expert_tp
     cfg["system"]["distribution"]["none_expert_tensor_degree"] = point.none_expert_tp
 
