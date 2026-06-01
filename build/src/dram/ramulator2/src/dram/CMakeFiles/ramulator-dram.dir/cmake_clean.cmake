@@ -7,6 +7,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/ramulator-dram.dir/impl/DDR4.cpp.o.d"
   "CMakeFiles/ramulator-dram.dir/impl/DDR5.cpp.o"
   "CMakeFiles/ramulator-dram.dir/impl/DDR5.cpp.o.d"
+  "CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.o"
+  "CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.o.d"
   "CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o"
   "CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o.d"
   "CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o"

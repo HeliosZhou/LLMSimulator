@@ -292,6 +292,30 @@ impl/DDR5.cpp.s:
 	cd /home/zsy/LLMSimulator/build && $(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR5.cpp.s
 .PHONY : impl/DDR5.cpp.s
 
+impl/GDDR6.o: impl/GDDR6.cpp.o
+.PHONY : impl/GDDR6.o
+
+# target to build an object file
+impl/GDDR6.cpp.o:
+	cd /home/zsy/LLMSimulator/build && $(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.o
+.PHONY : impl/GDDR6.cpp.o
+
+impl/GDDR6.i: impl/GDDR6.cpp.i
+.PHONY : impl/GDDR6.i
+
+# target to preprocess a source file
+impl/GDDR6.cpp.i:
+	cd /home/zsy/LLMSimulator/build && $(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.i
+.PHONY : impl/GDDR6.cpp.i
+
+impl/GDDR6.s: impl/GDDR6.cpp.s
+.PHONY : impl/GDDR6.s
+
+# target to generate assembly for a file
+impl/GDDR6.cpp.s:
+	cd /home/zsy/LLMSimulator/build && $(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.s
+.PHONY : impl/GDDR6.cpp.s
+
 impl/HBM.o: impl/HBM.cpp.o
 .PHONY : impl/HBM.o
 
@@ -415,6 +439,9 @@ help:
 	@echo "... impl/DDR5.o"
 	@echo "... impl/DDR5.i"
 	@echo "... impl/DDR5.s"
+	@echo "... impl/GDDR6.o"
+	@echo "... impl/GDDR6.i"
+	@echo "... impl/GDDR6.s"
 	@echo "... impl/HBM.o"
 	@echo "... impl/HBM.i"
 	@echo "... impl/HBM.s"

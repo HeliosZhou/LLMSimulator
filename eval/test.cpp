@@ -108,6 +108,10 @@ int main(int argc, char *argv[]) {
     system_config.memory_capacity =
         config["system"]["memory_capacity"].as<double>();
   }
+  if (config["system"]["ramulator_sample_stride"]) {
+    system_config.ramulator_sample_stride =
+        std::max(1, config["system"]["ramulator_sample_stride"].as<int>());
+  }
 
   if (config["system"]["logic_x"]) {
     system_config.logic_x = config["system"]["logic_x"].as<int>();

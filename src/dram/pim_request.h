@@ -47,6 +47,8 @@ class PIMRequest {
 
   cycle_t start = 0;
   cycle_t end = 0;
+  double sample_scale = 1.0;
+  DRAMRequestType dramreq_type = DRAMRequestType::kMAX;
 
   void AddCommand(PIMCommand&& pimcommand);
   std::list<PIMCommand>& GetCommand();

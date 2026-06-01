@@ -76,6 +76,16 @@ struct Stat {
   double total_memory_used = 0;    // Total memory used (bytes)
   double memory_utilization = 0;   // Memory utilization percentage
 
+  // Ramulator detailed counters
+  counter_t act_count = 0;         // Activation command count
+  counter_t read_count = 0;        // Read command count
+  counter_t write_count = 0;       // Write command count
+  counter_t all_act_count = 0;     // All activation command count
+  counter_t all_read_count = 0;    // All read command count
+  counter_t all_write_count = 0;   // All write command count
+  counter_t ref_count = 0;         // Refresh command count
+  time_ns memory_duration = 0;     // Memory access duration (ns)
+
   int is_mixed = 0; // wheter it is mixed stage or not
   int split = 0;
   std::string type;  // t2t, t2ft, e2e

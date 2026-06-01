@@ -100,6 +100,16 @@ class StatusBoard {
   util compute_util;
   util memory_util;
 
+  // Ramulator detailed counters
+  counter_t act_count = 0;
+  counter_t read_count = 0;
+  counter_t write_count = 0;
+  counter_t all_act_count = 0;
+  counter_t all_read_count = 0;
+  counter_t all_write_count = 0;
+  counter_t ref_count = 0;
+  time_ns memory_duration = 0;
+
   // record
   time_ns start_time = 0;
   time_ns end_time = 0;

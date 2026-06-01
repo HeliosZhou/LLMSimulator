@@ -272,6 +272,16 @@ void TopModuleGraph::set_pop_status() {
     status.mac_energy +=
         exec_status.flops * dram_powers[processor_type].kMAC_energy_j_;
     ;  // 2flops per operation, energy per operation, pJ to nJ
+
+    // Accumulate Ramulator detailed counters
+    status.act_count += exec_status.act_count;
+    status.read_count += exec_status.read_count;
+    status.write_count += exec_status.write_count;
+    status.all_act_count += exec_status.all_act_count;
+    status.all_read_count += exec_status.all_read_count;
+    status.all_write_count += exec_status.all_write_count;
+    status.ref_count += exec_status.ref_count;
+    status.memory_duration += exec_status.memory_duration;
   }
 
   // if (!exec_status.parallel_execution) {

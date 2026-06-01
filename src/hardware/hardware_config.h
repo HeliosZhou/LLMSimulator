@@ -11,6 +11,7 @@ struct PIMHWConfig {
   ProcessorType type = ProcessorType::GPU;
 
   int bandwidth_x = 0;
+  int ramulator_sample_stride = 1;
 };
 
 class SystemConfig {
@@ -50,7 +51,8 @@ class SystemConfig {
                  bool use_inject_rate = false,
                  int request_per_second = 10,
                  int num_cube = 5,
-                 int num_logic_cube = 5
+                 int num_logic_cube = 5,
+                 int ramulator_sample_stride = 1
                 )
       : gpu_gen(gpu_gen),
         num_node(num_node),
@@ -86,7 +88,8 @@ class SystemConfig {
         use_inject_rate(use_inject_rate),
         request_per_second(request_per_second),
         num_cube(num_cube),
-        num_logic_cube(num_logic_cube){
+        num_logic_cube(num_logic_cube),
+        ramulator_sample_stride(ramulator_sample_stride){
           logic_memory_bandwidth = memory_bandwidth * logic_x;
           pim_memory_bandwidth = memory_bandwidth * pim_x;
         };
@@ -156,6 +159,7 @@ class SystemConfig {
 
   int num_cube; //8: for HBM3E (B100), 5 for HBM3 (H100)
   int num_logic_cube;
+  int ramulator_sample_stride;
   // Device
 };
 

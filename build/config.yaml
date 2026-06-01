@@ -1,44 +1,47 @@
+log:
+  export_gantt: false
+  gantt_directory: ./gantt
+  output_directory: /home/zsy/LLMSimulator/experiments/exp_mem_arch/data/.tmp_result_hbm3e_b32_l2048_reorder_off_ramul_on.g1i73R
+  print_log: false
 model:
   model_name: deepseekV3
-system:
-  gpu_gen: B200
-  nvlink_gen: 5
-  infiniband_gen: 7200
-  num_node: 4
-  num_device: 8
-  processor_type: GPU
-  distribution:
-    expert_tensor_degree: 1
-    none_expert_tensor_degree: 1
-  optimization:
-    parallel_execution: false
-    hetero_subbatch: false
-    disagg_system: false
-    use_low_unit_moe_only: false
-    use_ramulator: false
-    compressed_kv: true
-    use_absorb: true
-    use_flash_mla: true
-    use_flash_attention: true
-    reuse_kv_cache: true
-    kv_cache_reuse_rate: 0.0
-    prefill_mode: false
-    decode_mode: true
 serving:
-  max_batch_size: 64
+  max_batch_size: 1024
   max_process_token: 0
 simulation:
   data: synthesis
-  input_len: 2048
-  output_len: 2
-  precision_byte: 2
-  skewness: 0.0
-  iter: 3
-  injection_rate: 0
   exit_out_of_memory: false
+  injection_rate: 0
+  input_len: 2048
+  iter: 3
   mem_cap_limit: false
-log:
-  print_log: false
-  export_gantt: false
-  output_directory: /home/zsy/LLMSimulator/experiments/exp4/data
-  gantt_directory: ./gantt
+  output_len: 2
+  precision_byte: 1
+  skewness: 0.0
+system:
+  distribution:
+    expert_tensor_degree: 1
+    none_expert_tensor_degree: 1
+  gpu_gen: B200
+  infiniband_gen: 800
+  memory_bandwidth: 8000000000000
+  memory_capacity: 206158430208
+  num_device: 8
+  num_node: 4
+  nvlink_gen: 5
+  optimization:
+    compressed_kv: true
+    decode_mode: true
+    disagg_system: false
+    hetero_subbatch: false
+    kv_cache_reuse_rate: 0.0
+    parallel_execution: false
+    prefill_mode: false
+    reuse_kv_cache: true
+    use_absorb: 'False'
+    use_flash_attention: true
+    use_flash_mla: true
+    use_low_unit_moe_only: false
+    use_ramulator: 'True'
+  processor_type: GPU
+  ramulator_sample_stride: 1

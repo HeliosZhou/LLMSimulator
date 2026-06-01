@@ -22,9 +22,23 @@ Ramulator::AddrVec_t MMapController::getAddrVec(addr address, long long bundle_i
   addr target_address = address + bundle_idx * memory_config.granul;
   AddrVec addr_vec = addrToVec(target_address);
   int channel = memory_config.num_channel * addr_vec.cube + addr_vec.channel;
-  Ramulator::AddrVec_t ramul_addr_vec = {
-      channel / 2,   channel % 2,  addr_vec.rank, addr_vec.bankgroup,
-      addr_vec.bank, addr_vec.row, addr_vec.col};
+
+  // 根据 Ramulator 地址层级判断 DRAM 类型。
+  Ramulator::AddrVec_t ramul_addr_vec;
+  if (memory_config.ramulator_addr_levels == 5) {
+    // GDDR6: channel, bankgroup, bank, row, column
+    ramul_addr_vec = {channel, addr_vec.bankgroup, addr_vec.bank,
+                      addr_vec.row, addr_vec.col};
+  } else if (memory_config.ramulator_addr_levels == 6) {
+    // DDR5: channel, rank, bankgroup, bank, row, column
+    ramul_addr_vec = {channel,       addr_vec.rank, addr_vec.bankgroup,
+                      addr_vec.bank, addr_vec.row,  addr_vec.col};
+  } else {
+    // HBM: channel, pseudochannel, rank, bankgroup, bank, row, column
+    ramul_addr_vec = {
+        channel / 2,   channel % 2,  addr_vec.rank, addr_vec.bankgroup,
+        addr_vec.bank, addr_vec.row, addr_vec.col};
+  }
 
   return ramul_addr_vec;
 }
@@ -34,9 +48,23 @@ Ramulator::AddrVec_t MMapController::getAddrVecLOGIC(addr address,
   addr target_address = address + bundle_idx * memory_config.granul;
   AddrVec addr_vec = addrToVecLOGIC(target_address);
   int channel = memory_config.num_channel * addr_vec.cube + addr_vec.channel;
-  Ramulator::AddrVec_t ramul_addr_vec = {
-      channel / 2,   channel % 2,  addr_vec.rank, addr_vec.bankgroup,
-      addr_vec.bank, addr_vec.row, addr_vec.col};
+
+  // 根据 Ramulator 地址层级判断 DRAM 类型。
+  Ramulator::AddrVec_t ramul_addr_vec;
+  if (memory_config.ramulator_addr_levels == 5) {
+    // GDDR6: channel, bankgroup, bank, row, column
+    ramul_addr_vec = {channel, addr_vec.bankgroup, addr_vec.bank,
+                      addr_vec.row, addr_vec.col};
+  } else if (memory_config.ramulator_addr_levels == 6) {
+    // DDR5: channel, rank, bankgroup, bank, row, column
+    ramul_addr_vec = {channel,       addr_vec.rank, addr_vec.bankgroup,
+                      addr_vec.bank, addr_vec.row,  addr_vec.col};
+  } else {
+    // HBM: channel, pseudochannel, rank, bankgroup, bank, row, column
+    ramul_addr_vec = {
+        channel / 2,   channel % 2,  addr_vec.rank, addr_vec.bankgroup,
+        addr_vec.bank, addr_vec.row, addr_vec.col};
+  }
 
   return ramul_addr_vec;
 }

@@ -45,9 +45,11 @@ class DRAMInterface {
 
   PIMHWConfig pim_hw_config;
 
-  void setPIMHWConfig(ProcessorType type, int bandwidth_x) {
+  void setPIMHWConfig(ProcessorType type, int bandwidth_x,
+                      int ramulator_sample_stride = 1) {
     pim_hw_config.type = type;
     pim_hw_config.bandwidth_x = bandwidth_x;
+    pim_hw_config.ramulator_sample_stride = ramulator_sample_stride;
   }
 
   std::map<DRAMRequestType, std::string> dramreq_to_string = {};

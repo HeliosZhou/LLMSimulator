@@ -422,7 +422,15 @@ void Cluster::exportToCSV(std::ofstream &csv, std::vector<Stat> &stat_list) {
         << std::to_string(temp.weight_size) << ","
         << std::to_string(temp.kv_cache_size) << ","
         << std::to_string(temp.total_memory_used) << ","
-        << std::to_string(temp.memory_utilization) << std::endl;
+        << std::to_string(temp.memory_utilization) << ","
+        << std::to_string(temp.act_count) << ","
+        << std::to_string(temp.read_count) << ","
+        << std::to_string(temp.write_count) << ","
+        << std::to_string(temp.all_act_count) << ","
+        << std::to_string(temp.all_read_count) << ","
+        << std::to_string(temp.all_write_count) << ","
+        << std::to_string(temp.ref_count) << ","
+        << std::to_string(temp.memory_duration) << std::endl;
   }
   stat_list.resize(0);
 }
@@ -439,7 +447,8 @@ std::vector<Stat> Cluster::runIteration(int iter, std::string file_name) {
          "o_proj,ffn,expert_ffn,communication,rope,layernorm,residual,act_energy,read_energy,write_"
          "energy,all_act_energy,all_read_energy,all_write_energy,mac_energy,"
          "total_energy,fc_dram,fc_comp,attn_dram,attn_comp,moe_dram,moe_comp,OOM,"
-         "memory_capacity,activation_size,weight_size,kv_cache_size,total_memory_used,memory_utilization"
+         "memory_capacity,activation_size,weight_size,kv_cache_size,total_memory_used,memory_utilization,"
+         "act_count,read_count,write_count,all_act_count,all_read_count,all_write_count,ref_count,memory_duration"
       << std::endl;
 
   std::vector<Stat> stat_list;
@@ -528,6 +537,7 @@ std::vector<Stat> Cluster::runIterationMixed(int iter, std::ofstream &csv) {
     scheduler->fillRunningQueue();
   }
 
+  exportToCSV(csv, stat_list);
   return stat_list;
 }
 
@@ -610,6 +620,7 @@ std::vector<Stat> Cluster::runIterationSumGenSplit(int iter,
     }
   }
 
+  exportToCSV(csv, stat_list);
   return stat_list;
 }
 
@@ -685,6 +696,18 @@ void Cluster::setStat(Stat &stat) {
       stat.latency = time;
       stat.is_mixed = 0;
     }
+  }
+
+  for (int device_rank = 0; device_rank < num_total_device; device_rank++) {
+    const StatusBoard &status = get_device(device_rank)->status;
+    stat.act_count += status.act_count;
+    stat.read_count += status.read_count;
+    stat.write_count += status.write_count;
+    stat.all_act_count += status.all_act_count;
+    stat.all_read_count += status.all_read_count;
+    stat.all_write_count += status.all_write_count;
+    stat.ref_count += status.ref_count;
+    stat.memory_duration += status.memory_duration;
   }
 
   // Memory tracking

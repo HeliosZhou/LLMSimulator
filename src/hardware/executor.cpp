@@ -169,7 +169,8 @@ ExecStatus Executor::executePType(LayerType layer_type,
     bandwidth_x = device->config.pim_x;
   }
 
-  device->dram_interface->setPIMHWConfig(processor_type, bandwidth_x);
+  device->dram_interface->setPIMHWConfig(
+      processor_type, bandwidth_x, device->config.ramulator_sample_stride);
 
   if (layer_type == LayerType::LINEAR) {
     exec_status =

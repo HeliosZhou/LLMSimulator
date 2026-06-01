@@ -49,18 +49,32 @@ void DRAMInterface::HandleRequest(const std::list<DRAMRequest::Ptr>& requests,
 
 void DRAMInterface::updateStatus(const PIMRequest& pimrequest) {
   cycle_t duration = pimrequest.end - pimrequest.start;  // dram cycle
+  const double sample_scale = pimrequest.sample_scale;
+  const auto scale_counter = [sample_scale](counter_t value) {
+    return static_cast<counter_t>(std::llround(value * sample_scale));
+  };
+  const counter_t sampled_commands =
+      scale_counter(static_cast<counter_t>(pimrequest.command_queue.size()));
 
-  time += (duration * memory_scale_factor);
-  exec_status.memory_duration += (duration * memory_scale_factor);
+  time += (duration * memory_scale_factor * sample_scale);
+  exec_status.memory_duration += (duration * memory_scale_factor * sample_scale);
 
   // Only for HBM, if you want to use another memory, (e.g. LPDDR5) order should be changed
-  exec_status.act_count += pimrequest.issued_dram_cmd[0];
-  exec_status.read_count += pimrequest.issued_dram_cmd[4];
-  exec_status.write_count += pimrequest.issued_dram_cmd[5];
-  exec_status.all_act_count += pimrequest.issued_dram_cmd[6];
-  exec_status.all_read_count += pimrequest.issued_dram_cmd[7];
-  exec_status.all_write_count += pimrequest.issued_dram_cmd[8];
-  exec_status.ref_count += pimrequest.issued_dram_cmd[9];
+  exec_status.act_count += scale_counter(pimrequest.issued_dram_cmd[0]);
+  exec_status.read_count += scale_counter(pimrequest.issued_dram_cmd[4]);
+  exec_status.write_count += scale_counter(pimrequest.issued_dram_cmd[5]);
+  exec_status.all_act_count += scale_counter(pimrequest.issued_dram_cmd[6]);
+  exec_status.all_read_count += scale_counter(pimrequest.issued_dram_cmd[7]);
+  exec_status.all_write_count += scale_counter(pimrequest.issued_dram_cmd[8]);
+  exec_status.ref_count += scale_counter(pimrequest.issued_dram_cmd[9]);
+
+  if (pimrequest.dramreq_type == DRAMRequestType::kRead &&
+      exec_status.read_count == 0 && exec_status.all_read_count == 0) {
+    exec_status.read_count += sampled_commands;
+  } else if (pimrequest.dramreq_type == DRAMRequestType::kWrite &&
+             exec_status.write_count == 0 && exec_status.all_write_count == 0) {
+    exec_status.write_count += sampled_commands;
+  }
 
   // For LPDDR5, order should be below
   /*
@@ -81,6 +95,7 @@ void DRAMInterface::SendRequest(PIMRequest& pimrequest) {
 PIMRequest& DRAMInterface::GeneratePIMCommand(const DRAMRequest::Ptr request,
                                               PIMRequest& pimrequest) const {
   DRAMRequestType type = request->GetType();
+  pimrequest.dramreq_type = type;
 
   try {
     kernel[int(type)](pimrequest, type, request->operands_, pim_hw_config);

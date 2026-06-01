@@ -593,12 +593,12 @@ src/model/CMakeFiles/model.dir/clean:
 src/scheduler/CMakeFiles/scheduler.dir/all:
 	$(MAKE) $(MAKESILENT) -f src/scheduler/CMakeFiles/scheduler.dir/build.make src/scheduler/CMakeFiles/scheduler.dir/depend
 	$(MAKE) $(MAKESILENT) -f src/scheduler/CMakeFiles/scheduler.dir/build.make src/scheduler/CMakeFiles/scheduler.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=69 "Built target scheduler"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=69,70 "Built target scheduler"
 .PHONY : src/scheduler/CMakeFiles/scheduler.dir/all
 
 # Build rule for subdir invocation for target.
 src/scheduler/CMakeFiles/scheduler.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/scheduler/CMakeFiles/scheduler.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 0
 .PHONY : src/scheduler/CMakeFiles/scheduler.dir/rule
@@ -632,7 +632,7 @@ src/dram/CMakeFiles/dram.dir/all: src/dram/ramulator2/src/dram_controller/CMakeF
 
 # Build rule for subdir invocation for target.
 src/dram/CMakeFiles/dram.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 72
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 71
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/dram/CMakeFiles/dram.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 0
 .PHONY : src/dram/CMakeFiles/dram.dir/rule
@@ -1407,12 +1407,12 @@ _deps/yaml-cpp-build/CMakeFiles/yaml-cpp.dir/clean:
 _deps/spdlog-build/CMakeFiles/spdlog.dir/all:
 	$(MAKE) $(MAKESILENT) -f _deps/spdlog-build/CMakeFiles/spdlog.dir/build.make _deps/spdlog-build/CMakeFiles/spdlog.dir/depend
 	$(MAKE) $(MAKESILENT) -f _deps/spdlog-build/CMakeFiles/spdlog.dir/build.make _deps/spdlog-build/CMakeFiles/spdlog.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=70,71,72,73,74,75,76 "Built target spdlog"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=71,72,73,74,75,76 "Built target spdlog"
 .PHONY : _deps/spdlog-build/CMakeFiles/spdlog.dir/all
 
 # Build rule for subdir invocation for target.
 _deps/spdlog-build/CMakeFiles/spdlog.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 _deps/spdlog-build/CMakeFiles/spdlog.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 0
 .PHONY : _deps/spdlog-build/CMakeFiles/spdlog.dir/rule
@@ -1433,12 +1433,12 @@ _deps/spdlog-build/CMakeFiles/spdlog.dir/clean:
 src/dram/ramulator2/src/base/CMakeFiles/ramulator-base.dir/all:
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/base/CMakeFiles/ramulator-base.dir/build.make src/dram/ramulator2/src/base/CMakeFiles/ramulator-base.dir/depend
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/base/CMakeFiles/ramulator-base.dir/build.make src/dram/ramulator2/src/base/CMakeFiles/ramulator-base.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=35,36,37,38 "Built target ramulator-base"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=34,35,36,37,38 "Built target ramulator-base"
 .PHONY : src/dram/ramulator2/src/base/CMakeFiles/ramulator-base.dir/all
 
 # Build rule for subdir invocation for target.
 src/dram/ramulator2/src/base/CMakeFiles/ramulator-base.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 5
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/dram/ramulator2/src/base/CMakeFiles/ramulator-base.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 0
 .PHONY : src/dram/ramulator2/src/base/CMakeFiles/ramulator-base.dir/rule
@@ -1537,12 +1537,12 @@ src/dram/ramulator2/src/memory_system/CMakeFiles/ramulator-memorysystem.dir/clea
 src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/all:
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/build.make src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/depend
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/build.make src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=33,34 "Built target ramulator-addrmapper"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=33 "Built target ramulator-addrmapper"
 .PHONY : src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/all
 
 # Build rule for subdir invocation for target.
 src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 1
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 0
 .PHONY : src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/rule
@@ -1563,12 +1563,12 @@ src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/clean:
 src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/all:
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/depend
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=51,52,53,54,55,56 "Built target ramulator-dram"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=50,51,52,53,54,55,56 "Built target ramulator-dram"
 .PHONY : src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/all
 
 # Build rule for subdir invocation for target.
 src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 0
 .PHONY : src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/rule
@@ -1589,12 +1589,12 @@ src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/clean:
 src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/all:
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/build.make src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/depend
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/build.make src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=39,40,41,42,43,44,45,46,47,48,49,50 "Built target ramulator-controller"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=39,40,41,42,43,44,45,46,47,48,49 "Built target ramulator-controller"
 .PHONY : src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/all
 
 # Build rule for subdir invocation for target.
 src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 12
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 11
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 0
 .PHONY : src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/rule

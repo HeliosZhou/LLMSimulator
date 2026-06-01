@@ -234,6 +234,7 @@ dram_EXTERNAL_OBJECTS = \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4-VRR.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR5.cpp.o" \
+"/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/LPDDR5.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o" \
@@ -287,6 +288,7 @@ src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/i
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4-VRR.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR5.cpp.o
+src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/LPDDR5.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o
