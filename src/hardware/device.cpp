@@ -1,5 +1,6 @@
 #include "hardware/device.h"
 
+#include <algorithm>
 #include <random>
 #include <string>
 #include <stdexcept>
@@ -222,10 +223,14 @@ void Device::run_ideal(DRAMRequestType dram_request_type, Tensor_Ptr tensor){
 void Device::initializeDRAM(int ProcessorType, DramEnergy dramEnergy) {
   int num_pseudo_ch = 0;
   if (ProcessorType == (int)(ProcessorType::GPU)) {
-    num_pseudo_ch = mmap_controller->getConfig().num_cube * mmap_controller->getConfig().num_channel / 2;
+    num_pseudo_ch = std::max(
+        1, mmap_controller->getConfig().num_cube *
+               mmap_controller->getConfig().num_channel / 2);
   }
   else {
-    num_pseudo_ch = mmap_controller->getConfig().num_cube * mmap_controller->getConfig().num_channel;
+    num_pseudo_ch = std::max(
+        1, mmap_controller->getConfig().num_cube *
+               mmap_controller->getConfig().num_channel);
   }
   dramEnergy.kACT_energy_j_ *= num_pseudo_ch;
   dramEnergy.kREAD_energy_j_ *= num_pseudo_ch;
@@ -234,6 +239,8 @@ void Device::initializeDRAM(int ProcessorType, DramEnergy dramEnergy) {
   dramEnergy.kALL_ACT_energy_j_ *= num_pseudo_ch;
   dramEnergy.kALL_READ_energy_j_ *= num_pseudo_ch;
   dramEnergy.kALL_WRITE_energy_j_ *= num_pseudo_ch;
+  dramEnergy.kREF_energy_j_ *= num_pseudo_ch;
+  dramEnergy.kBACKGROUND_power_nW_ *= num_pseudo_ch;
 
   top_module_graph->initializeDRAM(ProcessorType, dramEnergy);
 }

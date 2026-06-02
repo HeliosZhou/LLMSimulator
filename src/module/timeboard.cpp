@@ -61,6 +61,11 @@ void TimeStamp::set_status(const StatusBoard& output_status) {
   status.all_act_energy = output_status.all_act_energy - status.all_act_energy;
   status.all_read_energy = output_status.all_read_energy - status.all_read_energy;
   status.all_write_energy = output_status.all_write_energy - status.all_write_energy;
+  status.ref_energy = output_status.ref_energy - status.ref_energy;
+  status.background_energy =
+      output_status.background_energy - status.background_energy;
+  status.background_time =
+      output_status.background_time - status.background_time;
   
   status.mac_energy = output_status.mac_energy - status.mac_energy;
 
@@ -257,9 +262,12 @@ void TimeStamp::print_energy() {
             << "mJ  | all_ACT: " << std::setprecision(5) << status.all_act_energy / 1000 / 1000 
             << "mJ  | all_RD: " << std::setprecision(5) << status.all_read_energy / 1000 / 1000
             << "mJ  | all_WR: " << std::setprecision(5) << status.all_write_energy / 1000 / 1000
+            << "mJ  | REF: " << std::setprecision(5) << status.ref_energy / 1000 / 1000
+            << "mJ  | BG: " << std::setprecision(5) << status.background_energy / 1000 / 1000
             << "mJ  | MAC: " << std::setprecision(5) << status.mac_energy / 1000 / 1000
             << "mJ  | Total: " << std::setprecision(5) << (status.act_energy + status.read_energy + status.write_energy + 
-            status.all_act_energy + status.all_read_energy + status.all_write_energy) / 1000 / 1000
+            status.all_act_energy + status.all_read_energy + status.all_write_energy +
+            status.ref_energy + status.background_energy) / 1000 / 1000
             << "mJ";
 }
 }  // namespace llm_system

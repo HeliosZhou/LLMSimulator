@@ -1,6 +1,7 @@
 # Build and generated runtime artifacts
 build/
 *.log
+*.log.ch*
 
 # Python cache
 __pycache__/
@@ -11,4 +12,3 @@ __pycache__/
 experiments/**/*.csv
 experiments/**/*.yaml
 experiments/**/*.png
-

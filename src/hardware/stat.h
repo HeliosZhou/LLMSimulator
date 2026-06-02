@@ -56,6 +56,8 @@ struct Stat {
   energy_nJ all_act_energy = 0;
   energy_nJ all_read_energy = 0;
   energy_nJ all_write_energy = 0;
+  energy_nJ ref_energy = 0;
+  energy_nJ background_energy = 0;
   energy_nJ mac_energy = 0;
   energy_nJ total_energy = 0;
 
@@ -85,6 +87,7 @@ struct Stat {
   counter_t all_write_count = 0;   // All write command count
   counter_t ref_count = 0;         // Refresh command count
   time_ns memory_duration = 0;     // Memory access duration (ns)
+  time_ns background_time = 0;     // DRAM background energy time base (ns)
 
   int is_mixed = 0; // wheter it is mixed stage or not
   int split = 0;

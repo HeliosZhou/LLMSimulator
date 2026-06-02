@@ -37,6 +37,7 @@ struct ExecStatus {
   counter_t all_read_count = 0;
   counter_t all_write_count = 0;
   counter_t ref_count = 0;
+  time_ns background_time = 0.0;
 
   bool parallel_execution = false;
 
@@ -53,6 +54,7 @@ struct ExecStatus {
     all_read_count += rhs.all_read_count;
     all_write_count += rhs.all_write_count;
     ref_count += rhs.ref_count;
+    background_time += rhs.background_time;
 
     return *this;
   }
@@ -79,26 +81,28 @@ class StatusBoard {
   // energy_nJ write;
   // energy_nJ tsv;
   // energy_nJ interposer_io;
-  energy_nJ act_energy;
-  energy_nJ read_energy;
-  energy_nJ write_energy;
+  energy_nJ act_energy = 0;
+  energy_nJ read_energy = 0;
+  energy_nJ write_energy = 0;
 
-  energy_nJ all_act_energy;
-  energy_nJ all_read_energy;
-  energy_nJ all_write_energy;
+  energy_nJ all_act_energy = 0;
+  energy_nJ all_read_energy = 0;
+  energy_nJ all_write_energy = 0;
+  energy_nJ ref_energy = 0;
+  energy_nJ background_energy = 0;
 
-  energy_nJ act_energy_load;
-  energy_nJ read_energy_load;
-  energy_nJ write_energy_load;
+  energy_nJ act_energy_load = 0;
+  energy_nJ read_energy_load = 0;
+  energy_nJ write_energy_load = 0;
 
-  energy_nJ all_act_energy_load;
-  energy_nJ all_read_energy_load;
-  energy_nJ all_write_energy_load;
+  energy_nJ all_act_energy_load = 0;
+  energy_nJ all_read_energy_load = 0;
+  energy_nJ all_write_energy_load = 0;
 
-  energy_nJ mac_energy;
+  energy_nJ mac_energy = 0;
 
-  util compute_util;
-  util memory_util;
+  util compute_util = 0;
+  util memory_util = 0;
 
   // Ramulator detailed counters
   counter_t act_count = 0;
@@ -109,6 +113,7 @@ class StatusBoard {
   counter_t all_write_count = 0;
   counter_t ref_count = 0;
   time_ns memory_duration = 0;
+  time_ns background_time = 0;
 
   // record
   time_ns start_time = 0;
@@ -117,12 +122,12 @@ class StatusBoard {
   hw_metric flops = 0.0;
   hw_metric memory_size = 0.0;
   hw_metric opb = 0.0;
-  bool isTensorVec;
+  bool isTensorVec = false;
   std::vector<int> input_tensor_shape;
   std::vector<int> output_tensor_shape;
   std::vector<std::vector<int>> input_tensor_vec_shape;
   std::vector<std::vector<int>> output_tensor_vec_shape;
-  ProcessorType processor_type;
+  ProcessorType processor_type = ProcessorType::GPU;
   bool parallel_execution = false;
 };
 

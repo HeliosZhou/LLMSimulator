@@ -269,6 +269,13 @@ void TopModuleGraph::set_pop_status() {
     status.all_write_energy += exec_status.all_write_count *
                                dram_powers[processor_type].kALL_WRITE_energy_j_;
 
+    status.ref_energy +=
+        exec_status.ref_count * dram_powers[processor_type].kREF_energy_j_;
+    status.background_time += exec_status.total_duration;
+    status.background_energy += exec_status.total_duration *
+                                dram_powers[processor_type].kBACKGROUND_power_nW_ *
+                                1e-9;
+
     status.mac_energy +=
         exec_status.flops * dram_powers[processor_type].kMAC_energy_j_;
     ;  // 2flops per operation, energy per operation, pJ to nJ
@@ -338,7 +345,9 @@ std::vector<energy_nJ> TopModuleGraph::getDeviceEnergy(){
   std::vector<energy_nJ> device_energy {status.act_energy, status.read_energy, status.write_energy, 
                             status.all_act_energy, status.all_read_energy, status.all_write_energy,
                             status.mac_energy, status.act_energy + status.read_energy + status.write_energy + 
-                            status.all_act_energy + status.all_read_energy + status.all_write_energy + status.mac_energy}; 
+                            status.all_act_energy + status.all_read_energy + status.all_write_energy +
+                            status.ref_energy + status.background_energy + status.mac_energy,
+                            status.ref_energy, status.background_energy, status.background_time};
   return device_energy;
 }
 

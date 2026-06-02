@@ -35,7 +35,8 @@ class TimeStamp {
 
   energy_nJ getDramEnergy(){
     return status.act_energy + status.read_energy + status.write_energy +
-    status.all_act_energy + status.all_read_energy + status.all_write_energy;
+    status.all_act_energy + status.all_read_energy + status.all_write_energy +
+    status.ref_energy + status.background_energy;
   }
 
   energy_nJ getDramEnergyForLoad(){

@@ -347,7 +347,7 @@ bool Cluster::checkHeteroMemorySize() {
 }
 
 std::vector<energy_nJ> Cluster::getTotalEnergy() {
-  std::vector<energy_nJ> total_energy = {0, 0, 0, 0, 0, 0, 0, 0};
+  std::vector<energy_nJ> total_energy = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   for (int device_rank = 0; device_rank < num_total_device; device_rank++) {
     Device::Ptr device = get_device(device_rank);
     std::vector<energy_nJ> device_energy =
@@ -430,7 +430,10 @@ void Cluster::exportToCSV(std::ofstream &csv, std::vector<Stat> &stat_list) {
         << std::to_string(temp.all_read_count) << ","
         << std::to_string(temp.all_write_count) << ","
         << std::to_string(temp.ref_count) << ","
-        << std::to_string(temp.memory_duration) << std::endl;
+        << std::to_string(temp.memory_duration) << ","
+        << std::to_string(temp.ref_energy) << ","
+        << std::to_string(temp.background_energy) << ","
+        << std::to_string(temp.background_time) << std::endl;
   }
   stat_list.resize(0);
 }
@@ -448,7 +451,8 @@ std::vector<Stat> Cluster::runIteration(int iter, std::string file_name) {
          "energy,all_act_energy,all_read_energy,all_write_energy,mac_energy,"
          "total_energy,fc_dram,fc_comp,attn_dram,attn_comp,moe_dram,moe_comp,OOM,"
          "memory_capacity,activation_size,weight_size,kv_cache_size,total_memory_used,memory_utilization,"
-         "act_count,read_count,write_count,all_act_count,all_read_count,all_write_count,ref_count,memory_duration"
+         "act_count,read_count,write_count,all_act_count,all_read_count,all_write_count,ref_count,memory_duration,"
+         "ref_energy,background_energy,background_time"
       << std::endl;
 
   std::vector<Stat> stat_list;
@@ -520,6 +524,8 @@ std::vector<Stat> Cluster::runIterationMixed(int iter, std::ofstream &csv) {
     stat.all_write_energy = total_energy[5];
     stat.mac_energy = total_energy[6];
     stat.total_energy = total_energy[7];
+    stat.ref_energy = total_energy[8];
+    stat.background_energy = total_energy[9];
     stat.seq_queue_size = scheduler->sequence_queue.size();
 
     setStat(stat);
@@ -592,6 +598,8 @@ std::vector<Stat> Cluster::runIterationSumGenSplit(int iter,
       stat.all_write_energy = total_energy[5];
       stat.mac_energy = total_energy[6];
       stat.total_energy = total_energy[7];
+      stat.ref_energy = total_energy[8];
+      stat.background_energy = total_energy[9];
       stat.seq_queue_size = scheduler->sequence_queue.size();
 
       setStat(stat);
@@ -708,6 +716,7 @@ void Cluster::setStat(Stat &stat) {
     stat.all_write_count += status.all_write_count;
     stat.ref_count += status.ref_count;
     stat.memory_duration += status.memory_duration;
+    stat.background_time += status.background_time;
   }
 
   // Memory tracking
