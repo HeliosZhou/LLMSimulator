@@ -251,7 +251,8 @@ src/hardware/CMakeFiles/hardware.dir/device.cpp.o: \
  /usr/include/c++/13/bits/stl_set.h \
  /usr/include/c++/13/bits/stl_multiset.h \
  /home/zsy/LLMSimulator/src/hardware/hardware_config.h \
- /home/zsy/LLMSimulator/src/dram/power.h \
+ /home/zsy/LLMSimulator/src/dram/power.h /usr/include/c++/13/algorithm \
+ /usr/include/c++/13/pstl/glue_algorithm_defs.h \
  /home/zsy/LLMSimulator/src/dram/dram_interface.h \
  /usr/include/c++/13/list /usr/include/c++/13/bits/stl_list.h \
  /usr/include/c++/13/bits/list.tcc \
@@ -274,8 +275,6 @@ src/hardware/CMakeFiles/hardware.dir/device.cpp.o: \
  /home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include/spdlog/fmt/bundled/format.h \
  /home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include/spdlog/fmt/bundled/core.h \
  /home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include/spdlog/fmt/bundled/format-inl.h \
- /usr/include/c++/13/algorithm \
- /usr/include/c++/13/pstl/glue_algorithm_defs.h \
  /usr/include/c++/13/climits \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/limits.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h \
