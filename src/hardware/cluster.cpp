@@ -347,7 +347,8 @@ bool Cluster::checkHeteroMemorySize() {
 }
 
 std::vector<energy_nJ> Cluster::getTotalEnergy() {
-  std::vector<energy_nJ> total_energy = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  std::vector<energy_nJ> total_energy = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   for (int device_rank = 0; device_rank < num_total_device; device_rank++) {
     Device::Ptr device = get_device(device_rank);
     std::vector<energy_nJ> device_energy =
@@ -416,6 +417,7 @@ void Cluster::exportToCSV(std::ofstream &csv, std::vector<Stat> &stat_list) {
         << std::to_string(temp.Attn_COMP_energy) << ","
         << std::to_string(temp.MoE_DRAM_energy) << ","
         << std::to_string(temp.MoE_COMP_energy) << ","
+        << temp.dram_energy_model << ","
         << std::to_string(temp.isOOM) << ","
         << std::to_string(temp.memory_capacity) << ","
         << std::to_string(temp.activation_size) << ","
@@ -433,7 +435,16 @@ void Cluster::exportToCSV(std::ofstream &csv, std::vector<Stat> &stat_list) {
         << std::to_string(temp.memory_duration) << ","
         << std::to_string(temp.ref_energy) << ","
         << std::to_string(temp.background_energy) << ","
-        << std::to_string(temp.background_time) << std::endl;
+        << std::to_string(temp.background_time) << ","
+        << std::to_string(temp.drampower_act_energy) << ","
+        << std::to_string(temp.drampower_read_energy) << ","
+        << std::to_string(temp.drampower_write_energy) << ","
+        << std::to_string(temp.drampower_all_act_energy) << ","
+        << std::to_string(temp.drampower_all_read_energy) << ","
+        << std::to_string(temp.drampower_all_write_energy) << ","
+        << std::to_string(temp.drampower_ref_energy) << ","
+        << std::to_string(temp.drampower_background_energy) << ","
+        << std::to_string(temp.drampower_total_energy) << std::endl;
   }
   stat_list.resize(0);
 }
@@ -449,10 +460,13 @@ std::vector<Stat> Cluster::runIteration(int iter, std::string file_name) {
          "q_up_proj,qr_proj,kv_up_proj,tr_k_up_proj,v_up_proj,atten_sum,atten_gen,"
          "o_proj,ffn,expert_ffn,communication,rope,layernorm,residual,act_energy,read_energy,write_"
          "energy,all_act_energy,all_read_energy,all_write_energy,mac_energy,"
-         "total_energy,fc_dram,fc_comp,attn_dram,attn_comp,moe_dram,moe_comp,OOM,"
+         "total_energy,fc_dram,fc_comp,attn_dram,attn_comp,moe_dram,moe_comp,dram_energy_model,OOM,"
          "memory_capacity,activation_size,weight_size,kv_cache_size,total_memory_used,memory_utilization,"
          "act_count,read_count,write_count,all_act_count,all_read_count,all_write_count,ref_count,memory_duration,"
-         "ref_energy,background_energy,background_time"
+         "ref_energy,background_energy,background_time,"
+         "drampower_act_energy,drampower_read_energy,drampower_write_energy,"
+         "drampower_all_act_energy,drampower_all_read_energy,drampower_all_write_energy,"
+         "drampower_ref_energy,drampower_background_energy,drampower_total_energy"
       << std::endl;
 
   std::vector<Stat> stat_list;
@@ -526,6 +540,15 @@ std::vector<Stat> Cluster::runIterationMixed(int iter, std::ofstream &csv) {
     stat.total_energy = total_energy[7];
     stat.ref_energy = total_energy[8];
     stat.background_energy = total_energy[9];
+    stat.drampower_act_energy = total_energy[11];
+    stat.drampower_read_energy = total_energy[12];
+    stat.drampower_write_energy = total_energy[13];
+    stat.drampower_all_act_energy = total_energy[14];
+    stat.drampower_all_read_energy = total_energy[15];
+    stat.drampower_all_write_energy = total_energy[16];
+    stat.drampower_ref_energy = total_energy[17];
+    stat.drampower_background_energy = total_energy[18];
+    stat.drampower_total_energy = total_energy[19];
     stat.seq_queue_size = scheduler->sequence_queue.size();
 
     setStat(stat);
@@ -600,6 +623,15 @@ std::vector<Stat> Cluster::runIterationSumGenSplit(int iter,
       stat.total_energy = total_energy[7];
       stat.ref_energy = total_energy[8];
       stat.background_energy = total_energy[9];
+      stat.drampower_act_energy = total_energy[11];
+      stat.drampower_read_energy = total_energy[12];
+      stat.drampower_write_energy = total_energy[13];
+      stat.drampower_all_act_energy = total_energy[14];
+      stat.drampower_all_read_energy = total_energy[15];
+      stat.drampower_all_write_energy = total_energy[16];
+      stat.drampower_ref_energy = total_energy[17];
+      stat.drampower_background_energy = total_energy[18];
+      stat.drampower_total_energy = total_energy[19];
       stat.seq_queue_size = scheduler->sequence_queue.size();
 
       setStat(stat);
@@ -683,6 +715,8 @@ void Cluster::exportGantt(std::string gantt_file_path) {
 }
 void Cluster::setStat(Stat &stat) {
   time_ns time = get_device(0)->status.device_time;
+  stat.dram_energy_model =
+      config.use_drampower ? "fgdram+drampower_hbm3e_adapter" : "fgdram";
 
   stat.batchsize = scheduler->getBatchSize();
   stat.average_seq_len = scheduler->getAverageSeqlen();

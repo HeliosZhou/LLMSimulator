@@ -40,6 +40,7 @@ class SystemConfig {
                  bool disagg_system = false,
                  bool use_low_unit_moe_only = false,
                  bool use_ramulator = false,
+                 bool use_drampower = false,
                  bool exit_out_of_memory = true,
                  bool mem_cap_limit = false,               
                  bool use_flash_mla = true,
@@ -77,6 +78,7 @@ class SystemConfig {
         disagg_system(disagg_system),
         use_low_unit_moe_only(use_low_unit_moe_only),
         use_ramulator(use_ramulator),
+        use_drampower(use_drampower),
         exit_out_of_memory(exit_out_of_memory),
         mem_cap_limit(mem_cap_limit),
         use_flash_mla(use_flash_mla),
@@ -138,6 +140,7 @@ class SystemConfig {
   bool disagg_system = true;
   bool use_low_unit_moe_only = false;
   bool use_ramulator = false;
+  bool use_drampower = false;
   
   bool exit_out_of_memory = false;
   bool mem_cap_limit = false;
@@ -188,6 +191,7 @@ static SystemConfig A100 = SystemConfig(
                  false,                             // disagg_system 
                  false,                             // use_low_unit_moe_only
                  false,                             // use_ramulator
+                 false,                             // use_drampower
                  true,                              // exit_out_of_memory
                  false,                             // mem_cap_limit
                  true,                              // use_flash_mla
@@ -226,6 +230,7 @@ static SystemConfig H100 = SystemConfig(
                  false,                             // disagg_system
                  false,                             // use_low_unit_moe_only 
                  false,                             // use_ramulator
+                 false,                             // use_drampower
                  true,                              // exit_out_of_memory
                  false,                             // mem_cap_limit
                  true,                              // use_flash_mla
@@ -261,9 +266,10 @@ static SystemConfig B100 = SystemConfig(
                   ProcessorType::GPU,                // high_processor_type
                   ProcessorType::LOGIC,              // low_processor_type
                   false,                             // communication_hiding
-                  false,                             // disagg_system
-                  false,                             // use_low_unit_moe_only 
+                 false,                             // disagg_system
+                 false,                             // use_low_unit_moe_only
                   false,                             // use_ramulator
+                  false,                             // use_drampower
                   true,                              // exit_out_of_memory
                   false,                             // mem_cap_limit
                   true,                              // use_flash_mla
@@ -300,8 +306,9 @@ static SystemConfig B200 = SystemConfig(
                  ProcessorType::LOGIC,              // low_processor_type
                  false,                             // communication_hiding
                  false,                             // disagg_system
-                 false,                             // use_low_unit_moe_only 
+                 false,                             // use_low_unit_moe_only
                  false,                             // use_ramulator
+                 false,                             // use_drampower
                  true,                              // exit_out_of_memory
                  false,                             // mem_cap_limit
                  true,                              // use_flash_mla

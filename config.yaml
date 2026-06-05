@@ -17,6 +17,7 @@ system:
     disagg_system: off
     use_low_unit_moe_only: off
     use_ramulator: off
+    use_drampower: off
     compressed_kv: on
     use_absorb: on
     use_flash_mla: on

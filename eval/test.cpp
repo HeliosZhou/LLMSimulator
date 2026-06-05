@@ -145,6 +145,10 @@ int main(int argc, char *argv[]) {
       config["system"]["optimization"]["use_low_unit_moe_only"].as<bool>();      
   system_config.use_ramulator =
       config["system"]["optimization"]["use_ramulator"].as<bool>();
+  if (config["system"]["optimization"]["use_drampower"]) {
+    system_config.use_drampower =
+        config["system"]["optimization"]["use_drampower"].as<bool>();
+  }
 
   system_config.use_flash_mla =
       config["system"]["optimization"]["use_flash_mla"].as<bool>();

@@ -1,6 +1,27 @@
 #include "module/module_graph.h"
 
+#include <algorithm>
+#include <cstdint>
+
+#include "drampower/hbm3e_adapter.h"
+
 namespace llm_system {
+namespace {
+
+Ramulator::DRAMPower::CommandCounters to_drampower_counters(
+    const ExecStatus& exec_status) {
+  return {
+      static_cast<std::uint64_t>(std::max<counter_t>(0, exec_status.act_count)),
+      static_cast<std::uint64_t>(std::max<counter_t>(0, exec_status.read_count)),
+      static_cast<std::uint64_t>(std::max<counter_t>(0, exec_status.write_count)),
+      static_cast<std::uint64_t>(std::max<counter_t>(0, exec_status.all_act_count)),
+      static_cast<std::uint64_t>(std::max<counter_t>(0, exec_status.all_read_count)),
+      static_cast<std::uint64_t>(std::max<counter_t>(0, exec_status.all_write_count)),
+      static_cast<std::uint64_t>(std::max<counter_t>(0, exec_status.ref_count)),
+  };
+}
+
+}  // namespace
 
 ModuleGraph::ModuleGraph(Module::Ptr module, StatusBoard& status,
                          Tensor::Ptr input, int module_level, bool module_pop)
@@ -276,6 +297,21 @@ void TopModuleGraph::set_pop_status() {
                                 dram_powers[processor_type].kBACKGROUND_power_nW_ *
                                 1e-9;
 
+    if (device->config.use_drampower) {
+      static const Ramulator::DRAMPower::HBM3EAdapter drampower;
+      const auto drampower_energy = drampower.calculate(
+          to_drampower_counters(exec_status), exec_status.total_duration);
+      status.drampower_act_energy += drampower_energy.act_nj;
+      status.drampower_read_energy += drampower_energy.read_nj;
+      status.drampower_write_energy += drampower_energy.write_nj;
+      status.drampower_all_act_energy += drampower_energy.all_act_nj;
+      status.drampower_all_read_energy += drampower_energy.all_read_nj;
+      status.drampower_all_write_energy += drampower_energy.all_write_nj;
+      status.drampower_ref_energy += drampower_energy.ref_nj;
+      status.drampower_background_energy += drampower_energy.background_nj;
+      status.drampower_total_energy += drampower_energy.total_nj;
+    }
+
     status.mac_energy +=
         exec_status.flops * dram_powers[processor_type].kMAC_energy_j_;
     ;  // 2flops per operation, energy per operation, pJ to nJ
@@ -347,7 +383,16 @@ std::vector<energy_nJ> TopModuleGraph::getDeviceEnergy(){
                             status.mac_energy, status.act_energy + status.read_energy + status.write_energy + 
                             status.all_act_energy + status.all_read_energy + status.all_write_energy +
                             status.ref_energy + status.background_energy + status.mac_energy,
-                            status.ref_energy, status.background_energy, status.background_time};
+                            status.ref_energy, status.background_energy, status.background_time,
+                            status.drampower_act_energy,
+                            status.drampower_read_energy,
+                            status.drampower_write_energy,
+                            status.drampower_all_act_energy,
+                            status.drampower_all_read_energy,
+                            status.drampower_all_write_energy,
+                            status.drampower_ref_energy,
+                            status.drampower_background_energy,
+                            status.drampower_total_energy};
   return device_energy;
 }
 

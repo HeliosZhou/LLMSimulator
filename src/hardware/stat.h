@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <string>
 
 #include "common/type.h"
 
@@ -67,6 +68,7 @@ struct Stat {
   energy_nJ Attn_COMP_energy = 0;
   energy_nJ MoE_DRAM_energy = 0;
   energy_nJ MoE_COMP_energy = 0;
+  std::string dram_energy_model = "fgdram";
 
   bool isOOM = false;
 
@@ -88,6 +90,15 @@ struct Stat {
   counter_t ref_count = 0;         // Refresh command count
   time_ns memory_duration = 0;     // Memory access duration (ns)
   time_ns background_time = 0;     // DRAM background energy time base (ns)
+  energy_nJ drampower_act_energy = 0;
+  energy_nJ drampower_read_energy = 0;
+  energy_nJ drampower_write_energy = 0;
+  energy_nJ drampower_all_act_energy = 0;
+  energy_nJ drampower_all_read_energy = 0;
+  energy_nJ drampower_all_write_energy = 0;
+  energy_nJ drampower_ref_energy = 0;
+  energy_nJ drampower_background_energy = 0;
+  energy_nJ drampower_total_energy = 0;
 
   int is_mixed = 0; // wheter it is mixed stage or not
   int split = 0;

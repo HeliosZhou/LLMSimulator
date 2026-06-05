@@ -38,6 +38,15 @@ struct ExecStatus {
   counter_t all_write_count = 0;
   counter_t ref_count = 0;
   time_ns background_time = 0.0;
+  energy_nJ drampower_act_energy = 0;
+  energy_nJ drampower_read_energy = 0;
+  energy_nJ drampower_write_energy = 0;
+  energy_nJ drampower_all_act_energy = 0;
+  energy_nJ drampower_all_read_energy = 0;
+  energy_nJ drampower_all_write_energy = 0;
+  energy_nJ drampower_ref_energy = 0;
+  energy_nJ drampower_background_energy = 0;
+  energy_nJ drampower_total_energy = 0;
 
   bool parallel_execution = false;
 
@@ -55,6 +64,15 @@ struct ExecStatus {
     all_write_count += rhs.all_write_count;
     ref_count += rhs.ref_count;
     background_time += rhs.background_time;
+    drampower_act_energy += rhs.drampower_act_energy;
+    drampower_read_energy += rhs.drampower_read_energy;
+    drampower_write_energy += rhs.drampower_write_energy;
+    drampower_all_act_energy += rhs.drampower_all_act_energy;
+    drampower_all_read_energy += rhs.drampower_all_read_energy;
+    drampower_all_write_energy += rhs.drampower_all_write_energy;
+    drampower_ref_energy += rhs.drampower_ref_energy;
+    drampower_background_energy += rhs.drampower_background_energy;
+    drampower_total_energy += rhs.drampower_total_energy;
 
     return *this;
   }
@@ -114,6 +132,15 @@ class StatusBoard {
   counter_t ref_count = 0;
   time_ns memory_duration = 0;
   time_ns background_time = 0;
+  energy_nJ drampower_act_energy = 0;
+  energy_nJ drampower_read_energy = 0;
+  energy_nJ drampower_write_energy = 0;
+  energy_nJ drampower_all_act_energy = 0;
+  energy_nJ drampower_all_read_energy = 0;
+  energy_nJ drampower_all_write_energy = 0;
+  energy_nJ drampower_ref_energy = 0;
+  energy_nJ drampower_background_energy = 0;
+  energy_nJ drampower_total_energy = 0;
 
   // record
   time_ns start_time = 0;
