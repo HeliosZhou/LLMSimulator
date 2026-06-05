@@ -209,6 +209,15 @@
 /home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/install.dir
 /home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/install/local.dir
 /home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/install/strip.dir
+/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir
+/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/package.dir
+/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/package_source.dir
+/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/edit_cache.dir
+/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/rebuild_cache.dir
+/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/list_install_components.dir
+/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/install.dir
+/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/install/local.dir
+/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/install/strip.dir
 /home/zsy/LLMSimulator/build/eval/CMakeFiles/run.dir
 /home/zsy/LLMSimulator/build/eval/CMakeFiles/package.dir
 /home/zsy/LLMSimulator/build/eval/CMakeFiles/package_source.dir

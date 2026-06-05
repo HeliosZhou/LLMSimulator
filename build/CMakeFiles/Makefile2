@@ -265,6 +265,7 @@ src/dram/ramulator2/src/all: src/dram/ramulator2/src/memory_system/all
 src/dram/ramulator2/src/all: src/dram/ramulator2/src/addr_mapper/all
 src/dram/ramulator2/src/all: src/dram/ramulator2/src/dram/all
 src/dram/ramulator2/src/all: src/dram/ramulator2/src/dram_controller/all
+src/dram/ramulator2/src/all: src/dram/ramulator2/src/drampower/all
 .PHONY : src/dram/ramulator2/src/all
 
 # Recursive "preinstall" directory target.
@@ -276,6 +277,7 @@ src/dram/ramulator2/src/preinstall: src/dram/ramulator2/src/memory_system/preins
 src/dram/ramulator2/src/preinstall: src/dram/ramulator2/src/addr_mapper/preinstall
 src/dram/ramulator2/src/preinstall: src/dram/ramulator2/src/dram/preinstall
 src/dram/ramulator2/src/preinstall: src/dram/ramulator2/src/dram_controller/preinstall
+src/dram/ramulator2/src/preinstall: src/dram/ramulator2/src/drampower/preinstall
 .PHONY : src/dram/ramulator2/src/preinstall
 
 # Recursive "clean" directory target.
@@ -287,6 +289,7 @@ src/dram/ramulator2/src/clean: src/dram/ramulator2/src/memory_system/clean
 src/dram/ramulator2/src/clean: src/dram/ramulator2/src/addr_mapper/clean
 src/dram/ramulator2/src/clean: src/dram/ramulator2/src/dram/clean
 src/dram/ramulator2/src/clean: src/dram/ramulator2/src/dram_controller/clean
+src/dram/ramulator2/src/clean: src/dram/ramulator2/src/drampower/clean
 .PHONY : src/dram/ramulator2/src/clean
 
 #=============================================================================
@@ -348,6 +351,21 @@ src/dram/ramulator2/src/dram_controller/preinstall:
 # Recursive "clean" directory target.
 src/dram/ramulator2/src/dram_controller/clean: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/clean
 .PHONY : src/dram/ramulator2/src/dram_controller/clean
+
+#=============================================================================
+# Directory level rules for directory src/dram/ramulator2/src/drampower
+
+# Recursive "all" directory target.
+src/dram/ramulator2/src/drampower/all: src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/all
+.PHONY : src/dram/ramulator2/src/drampower/all
+
+# Recursive "preinstall" directory target.
+src/dram/ramulator2/src/drampower/preinstall:
+.PHONY : src/dram/ramulator2/src/drampower/preinstall
+
+# Recursive "clean" directory target.
+src/dram/ramulator2/src/drampower/clean: src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/clean
+.PHONY : src/dram/ramulator2/src/drampower/clean
 
 #=============================================================================
 # Directory level rules for directory src/dram/ramulator2/src/frontend
@@ -487,6 +505,7 @@ CMakeFiles/llm_system.dir/all: src/dram/ramulator2/src/memory_system/CMakeFiles/
 CMakeFiles/llm_system.dir/all: src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/all
 CMakeFiles/llm_system.dir/all: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/all
 CMakeFiles/llm_system.dir/all: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/all
+CMakeFiles/llm_system.dir/all: src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/llm_system.dir/build.make CMakeFiles/llm_system.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/llm_system.dir/build.make CMakeFiles/llm_system.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=16 "Built target llm_system"
@@ -625,6 +644,7 @@ src/dram/CMakeFiles/dram.dir/all: src/dram/ramulator2/src/memory_system/CMakeFil
 src/dram/CMakeFiles/dram.dir/all: src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/all
 src/dram/CMakeFiles/dram.dir/all: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/all
 src/dram/CMakeFiles/dram.dir/all: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/all
+src/dram/CMakeFiles/dram.dir/all: src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/all
 	$(MAKE) $(MAKESILENT) -f src/dram/CMakeFiles/dram.dir/build.make src/dram/CMakeFiles/dram.dir/depend
 	$(MAKE) $(MAKESILENT) -f src/dram/CMakeFiles/dram.dir/build.make src/dram/CMakeFiles/dram.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=1,2,3,4,5,6,7 "Built target dram"
@@ -1563,12 +1583,12 @@ src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/clean:
 src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/all:
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/depend
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=50,51,52,53,54,55,56 "Built target ramulator-dram"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=50,51,52,53,54,55 "Built target ramulator-dram"
 .PHONY : src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/all
 
 # Build rule for subdir invocation for target.
 src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 0
 .PHONY : src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/rule
@@ -1607,6 +1627,32 @@ ramulator-controller: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulat
 src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/clean:
 	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/build.make src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/clean
 .PHONY : src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/clean
+
+#=============================================================================
+# Target rules for target src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir
+
+# All Build rule for target.
+src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/all:
+	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/build.make src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/depend
+	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/build.make src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=56 "Built target ramulator-drampower"
+.PHONY : src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/all
+
+# Build rule for subdir invocation for target.
+src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 1
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zsy/LLMSimulator/build/CMakeFiles 0
+.PHONY : src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/rule
+
+# Convenience name for target.
+ramulator-drampower: src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/rule
+.PHONY : ramulator-drampower
+
+# clean rule for target.
+src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/clean:
+	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/build.make src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/clean
+.PHONY : src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/clean
 
 #=============================================================================
 # Target rules for target eval/CMakeFiles/run.dir

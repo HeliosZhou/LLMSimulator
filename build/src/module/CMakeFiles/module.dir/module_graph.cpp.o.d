@@ -270,4 +270,5 @@ src/module/CMakeFiles/module.dir/module_graph.cpp.o: \
  /home/zsy/LLMSimulator/src/scheduler/scheduler.h \
  /usr/include/c++/13/algorithm \
  /usr/include/c++/13/pstl/glue_algorithm_defs.h \
- /home/zsy/LLMSimulator/src/module/timeboard.h
+ /home/zsy/LLMSimulator/src/module/timeboard.h \
+ /home/zsy/LLMSimulator/src/dram/ramulator2/src/drampower/hbm3e_adapter.h

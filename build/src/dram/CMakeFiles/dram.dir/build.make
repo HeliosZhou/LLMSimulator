@@ -234,7 +234,6 @@ dram_EXTERNAL_OBJECTS = \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4-VRR.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR5.cpp.o" \
-"/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/LPDDR5.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o" \
@@ -252,7 +251,8 @@ dram_EXTERNAL_OBJECTS = \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/plugin/oracle_rh.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/plugin/twice.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/plugin/hydra.cpp.o" \
-"/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/plugin/rrs.cpp.o"
+"/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/plugin/rrs.cpp.o" \
+"/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/hbm3e_adapter.cpp.o"
 
 src/dram/libdram.a: src/dram/CMakeFiles/dram.dir/pimkernel/pim_kernel.cpp.o
 src/dram/libdram.a: src/dram/CMakeFiles/dram.dir/pimkernel/Read.cpp.o
@@ -288,7 +288,6 @@ src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/i
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4-VRR.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR5.cpp.o
-src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/LPDDR5.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o
@@ -307,6 +306,7 @@ src/dram/libdram.a: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator
 src/dram/libdram.a: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/plugin/twice.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/plugin/hydra.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/plugin/rrs.cpp.o
+src/dram/libdram.a: src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/hbm3e_adapter.cpp.o
 src/dram/libdram.a: src/dram/CMakeFiles/dram.dir/build.make
 src/dram/libdram.a: src/dram/CMakeFiles/dram.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX static library libdram.a"

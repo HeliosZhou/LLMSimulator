@@ -3973,6 +3973,7 @@ src/module/CMakeFiles/module.dir/module_graph.cpp.o
  /home/zsy/LLMSimulator/src/dram/memory_object.h
  /home/zsy/LLMSimulator/src/dram/power.h
  /home/zsy/LLMSimulator/src/dram/ramulator2/src/base/type.h
+ /home/zsy/LLMSimulator/src/dram/ramulator2/src/drampower/hbm3e_adapter.h
  /home/zsy/LLMSimulator/src/hardware/base.h
  /home/zsy/LLMSimulator/src/hardware/cluster.h
  /home/zsy/LLMSimulator/src/hardware/device.h

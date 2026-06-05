@@ -613,12 +613,6 @@
 },
 {
   "directory": "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram",
-  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -std=c++20 -fPIC -fPIC -o CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.o -c /home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/GDDR6.cpp",
-  "file": "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/GDDR6.cpp",
-  "output": "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/GDDR6.cpp.o"
-},
-{
-  "directory": "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram",
   "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -std=c++20 -fPIC -fPIC -o CMakeFiles/ramulator-dram.dir/impl/LPDDR5.cpp.o -c /home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/LPDDR5.cpp",
   "file": "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/LPDDR5.cpp",
   "output": "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/LPDDR5.cpp.o"
@@ -724,6 +718,12 @@
   "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -std=c++20 -fPIC -fPIC -o CMakeFiles/ramulator-controller.dir/impl/plugin/rrs.cpp.o -c /home/zsy/LLMSimulator/src/dram/ramulator2/src/dram_controller/impl/plugin/rrs.cpp",
   "file": "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram_controller/impl/plugin/rrs.cpp",
   "output": "src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/plugin/rrs.cpp.o"
+},
+{
+  "directory": "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/drampower",
+  "command": "/usr/bin/c++  -I/home/zsy/LLMSimulator/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/src -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/yaml-cpp/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/spdlog/include -I/home/zsy/LLMSimulator/src/dram/ramulator2/ext/argparse/include -O3 -DNDEBUG -std=c++20 -fPIC -fPIC -o CMakeFiles/ramulator-drampower.dir/hbm3e_adapter.cpp.o -c /home/zsy/LLMSimulator/src/dram/ramulator2/src/drampower/hbm3e_adapter.cpp",
+  "file": "/home/zsy/LLMSimulator/src/dram/ramulator2/src/drampower/hbm3e_adapter.cpp",
+  "output": "src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/hbm3e_adapter.cpp.o"
 },
 {
   "directory": "/home/zsy/LLMSimulator/build/eval",

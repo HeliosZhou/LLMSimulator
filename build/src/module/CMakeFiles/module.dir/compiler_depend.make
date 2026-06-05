@@ -3960,6 +3960,7 @@ src/module/CMakeFiles/module.dir/module_graph.cpp.o: /home/zsy/LLMSimulator/src/
   /home/zsy/LLMSimulator/src/dram/memory_object.h \
   /home/zsy/LLMSimulator/src/dram/power.h \
   /home/zsy/LLMSimulator/src/dram/ramulator2/src/base/type.h \
+  /home/zsy/LLMSimulator/src/dram/ramulator2/src/drampower/hbm3e_adapter.h \
   /home/zsy/LLMSimulator/src/hardware/base.h \
   /home/zsy/LLMSimulator/src/hardware/cluster.h \
   /home/zsy/LLMSimulator/src/hardware/device.h \
@@ -6867,6 +6868,8 @@ src/module/CMakeFiles/module.dir/timeboard.cpp.o: /home/zsy/LLMSimulator/src/mod
 /usr/include/c++/13/string:
 
 /usr/include/features-time64.h:
+
+/home/zsy/LLMSimulator/src/dram/ramulator2/src/drampower/hbm3e_adapter.h:
 
 /usr/include/c++/13/tr1/exp_integral.tcc:
 

@@ -34,6 +34,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/base/CMakeLists.txt"
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/CMakeLists.txt"
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram_controller/CMakeLists.txt"
+  "/home/zsy/LLMSimulator/src/dram/ramulator2/src/drampower/CMakeLists.txt"
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/frontend/CMakeLists.txt"
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/memory_system/CMakeLists.txt"
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/test/CMakeLists.txt"
@@ -134,6 +135,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "src/dram/ramulator2/src/addr_mapper/CMakeFiles/CMakeDirectoryInformation.cmake"
   "src/dram/ramulator2/src/dram/CMakeFiles/CMakeDirectoryInformation.cmake"
   "src/dram/ramulator2/src/dram_controller/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "src/dram/ramulator2/src/drampower/CMakeFiles/CMakeDirectoryInformation.cmake"
   "eval/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
@@ -182,5 +184,6 @@ set(CMAKE_DEPEND_INFO_FILES
   "src/dram/ramulator2/src/addr_mapper/CMakeFiles/ramulator-addrmapper.dir/DependInfo.cmake"
   "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/DependInfo.cmake"
   "src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/DependInfo.cmake"
+  "src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/DependInfo.cmake"
   "eval/CMakeFiles/run.dir/DependInfo.cmake"
   )

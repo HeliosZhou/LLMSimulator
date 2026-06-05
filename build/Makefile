@@ -742,6 +742,19 @@ ramulator-controller/fast:
 .PHONY : ramulator-controller/fast
 
 #=============================================================================
+# Target rules for targets named ramulator-drampower
+
+# Build rule for target.
+ramulator-drampower: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ramulator-drampower
+.PHONY : ramulator-drampower
+
+# fast build rule for target.
+ramulator-drampower/fast:
+	$(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/build.make src/dram/ramulator2/src/drampower/CMakeFiles/ramulator-drampower.dir/build
+.PHONY : ramulator-drampower/fast
+
+#=============================================================================
 # Target rules for targets named run
 
 # Build rule for target.
@@ -805,6 +818,7 @@ help:
 	@echo "... ramulator-base"
 	@echo "... ramulator-controller"
 	@echo "... ramulator-dram"
+	@echo "... ramulator-drampower"
 	@echo "... ramulator-frontend"
 	@echo "... ramulator-memorysystem"
 	@echo "... ramulator-translation"
