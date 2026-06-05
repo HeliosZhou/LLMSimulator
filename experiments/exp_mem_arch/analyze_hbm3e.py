@@ -1,355 +1,423 @@
 #!/usr/bin/env python3
-"""HBM3E Memory Architecture Analysis.
-
-Analyzes HBM3E data comparing:
-- Reordering ON vs OFF
-- Different Batch sizes (32, 64, 128, 256)
-- Different Sequence lengths (2048, 4096, 8192)
-- Ramulator ON vs OFF
-"""
+"""Analyze HBM3E Ramulator hierarchy experiment results."""
 
 from __future__ import annotations
 
-import sys
+import argparse
+import csv
+from collections import defaultdict
 from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
-from common.sim_utils import (
-    attention_breakdown_from_csv,
-    read_csv_rows,
-    write_summary_csv,
-)
+from typing import Any, Iterable
 
 EXP_DIR = Path(__file__).resolve().parent
 DATA_DIR = EXP_DIR / "data"
 PLOT_DIR = EXP_DIR / "plots"
+REPORT_PATH = EXP_DIR / "HBM3E_ANALYSIS_REPORT.md"
 
 BATCH_PER_GPU = [32, 64, 128, 256]
 SEQ_LENGTHS = [2048, 4096, 8192]
+REORDERING_MODES = ["on", "off"]
+RAMULATOR_MODES = ["on", "off"]
+
+COUNT_FIELDS = [
+    "act_count",
+    "read_count",
+    "write_count",
+    "all_act_count",
+    "all_read_count",
+    "all_write_count",
+    "ref_count",
+]
+TIME_FIELDS = ["memory_duration", "background_time"]
+ENERGY_FIELDS = [
+    "act_energy",
+    "read_energy",
+    "write_energy",
+    "ref_energy",
+    "background_energy",
+    "total_energy",
+]
 
 
-def collect_hbm3e_results():
-    """Collect HBM3E experiment results."""
+def read_csv_rows(path: Path) -> list[dict[str, str]]:
+    with path.open("r", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def to_float(row: dict[str, str], field: str, default: float = 0.0) -> float:
+    try:
+        return float(row.get(field, default) or default)
+    except (TypeError, ValueError):
+        return default
+
+
+def average_rows(rows: Iterable[dict[str, str]], row_type: str = "t2t") -> dict[str, float]:
+    selected = [row for row in rows if row.get("type") == row_type]
+    if not selected:
+        selected = list(rows)
+    out: dict[str, float] = defaultdict(float)
+    if not selected:
+        return {}
+    for row in selected:
+        for key, value in row.items():
+            try:
+                out[key] += float(value)
+            except (TypeError, ValueError):
+                pass
+    for key in list(out):
+        out[key] /= len(selected)
+    return dict(out)
+
+
+def write_summary_csv(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not rows:
+        return
+    fields: list[str] = []
+    for row in rows:
+        for key in row:
+            if key not in fields:
+                fields.append(key)
+    with path.open("w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def parse_result_name(path: Path) -> dict[str, int | str] | None:
+    parts = path.stem.split("_")
+    try:
+        mem_type = parts[1]
+        batch = int(next(part[1:] for part in parts if part.startswith("b")))
+        seq_len = int(next(part[1:] for part in parts if part.startswith("l")))
+        reorder = parts[parts.index("reorder") + 1]
+        ramulator = parts[parts.index("ramul") + 1]
+    except (IndexError, StopIteration, ValueError):
+        return None
+    if mem_type != "hbm3e":
+        return None
+    return {
+        "memory_type": mem_type,
+        "batch_size": batch,
+        "seq_len": seq_len,
+        "reorder": reorder,
+        "ramulator": ramulator,
+    }
+
+
+def attention_breakdown(avg: dict[str, float]) -> dict[str, float]:
+    is_absorb = (avg.get("tr_k_up_proj", 0.0) + avg.get("v_up_proj", 0.0)) > 0
+    kv_decompress = (
+        avg.get("tr_k_up_proj", 0.0) + avg.get("v_up_proj", 0.0)
+        if is_absorb
+        else avg.get("kv_up_proj", 0.0)
+    )
+    score_context = avg.get("atten_sum", 0.0) + avg.get("atten_gen", 0.0)
+    out_proj = avg.get("o_proj", 0.0)
+    etc = (
+        avg.get("qkvgen", 0.0)
+        + avg.get("q_down_proj", 0.0)
+        + avg.get("kv_down_proj", 0.0)
+        + avg.get("kr_proj", 0.0)
+        + avg.get("q_up_proj", 0.0)
+        + avg.get("qr_proj", 0.0)
+        + avg.get("rope", 0.0)
+        + avg.get("layernorm", 0.0)
+        + avg.get("residual", 0.0)
+    )
+    return {
+        "kv_decompress_ns": kv_decompress,
+        "score_context_ns": score_context,
+        "out_proj_ns": out_proj,
+        "etc_ns": etc,
+        "attention_total_ns": kv_decompress + score_context + out_proj + etc,
+        "is_absorb": float(is_absorb),
+    }
+
+
+def summarize_file(path: Path) -> dict[str, Any] | None:
+    meta = parse_result_name(path)
+    if meta is None:
+        return None
+    avg = average_rows(read_csv_rows(path), "t2t")
+    if not avg:
+        return None
+
+    latency_ns = avg.get("latency", avg.get("time", 0.0))
+    row: dict[str, Any] = {
+        **meta,
+        "latency_ns": latency_ns,
+        "latency_ms": latency_ns / 1e6,
+        "throughput_tokens_per_s": (
+            avg.get("batchsize", 0.0) / (latency_ns * 1e-9)
+            if latency_ns > 0 and avg.get("batchsize", 0.0) > 0
+            else 0.0
+        ),
+        "sim_batchsize": avg.get("batchsize", 0.0),
+        "seqlen": avg.get("seqlen", 0.0),
+        "oom": avg.get("OOM", 0.0),
+        "memory_capacity_bytes": avg.get("memory_capacity", 0.0),
+        "activation_size_bytes": avg.get("activation_size", 0.0),
+        "weight_size_bytes": avg.get("weight_size", 0.0),
+        "kv_cache_size_bytes": avg.get("kv_cache_size", 0.0),
+        "total_memory_used_bytes": avg.get("total_memory_used", 0.0),
+        "memory_utilization_pct": avg.get("memory_utilization", 0.0),
+    }
+
+    row.update(attention_breakdown(avg))
+    for field in COUNT_FIELDS:
+        row[field] = avg.get(field, 0.0)
+    row["memory_duration_ns"] = avg.get("memory_duration", 0.0)
+    row["background_time_ns"] = avg.get("background_time", 0.0)
+    row["memory_duration_ms"] = row["memory_duration_ns"] / 1e6
+    row["background_time_ms"] = row["background_time_ns"] / 1e6
+    for field in ENERGY_FIELDS:
+        row[f"{field}_nJ"] = avg.get(field, 0.0)
+    return row
+
+
+def collect_results() -> list[dict[str, Any]]:
     rows = []
-    for csv_file in sorted(DATA_DIR.glob("result_hbm3e_*.csv")):
-        parts = csv_file.stem.split("_")
-        try:
-            batch = int(next(p[1:] for p in parts if p.startswith("b")))
-            seq_len = int(next(p[1:] for p in parts if p.startswith("l")))
-            reorder_idx = parts.index("reorder") + 1
-            reorder = parts[reorder_idx]
-            ramul_idx = parts.index("ramul") + 1
-            ramul = parts[ramul_idx]
-        except (StopIteration, ValueError):
-            continue
-        rows.append({
-            "reorder": reorder,
-            "ramulator": ramul,
-            "batch_size": batch,
-            "seq_len": seq_len,
-            **attention_breakdown_from_csv(csv_file),
-        })
+    for csv_file in sorted(DATA_DIR.glob("result_hbm3e_b*_l*_reorder_*_ramul_*.csv")):
+        row = summarize_file(csv_file)
+        if row is not None:
+            rows.append(row)
+    rows.sort(key=lambda r: (r["reorder"], r["ramulator"], r["seq_len"], r["batch_size"]))
     return rows
 
 
-def print_comparison_table(rows):
-    """Print detailed comparison table."""
-    data = {(r["reorder"], r["ramulator"], r["seq_len"], r["batch_size"]): r for r in rows}
-
-    print("\n" + "=" * 100)
-    print("HBM3E 内存架构仿真对比分析")
-    print("=" * 100)
-
-    # 1. Ramulator 对比
-    print("\n### 1. Ramulator 启用前后对比 (Reordering ON)")
-    print(f"\n{'Batch/GPU':<12} {'Seq Len':<10} {'Ideal (ms)':<14} {'Ramulator (ms)':<16} {'Overhead':<12} {'Ratio':<8}")
-    print("-" * 72)
-
-    for seq_len in SEQ_LENGTHS:
-        for batch in BATCH_PER_GPU:
-            key_off = ("on", "off", seq_len, batch)
-            key_on = ("on", "on", seq_len, batch)
-            val_off = data.get(key_off, {}).get("total", 0.0) / 1e6
-            val_on = data.get(key_on, {}).get("total", 0.0) / 1e6
-            if val_off > 0 and val_on > 0:
-                overhead = ((val_on / val_off) - 1) * 100
-                ratio = val_on / val_off
-                print(f"{batch:<12} {seq_len:<10} {val_off:<14.2f} {val_on:<16.2f} +{overhead:<11.1f}% {ratio:<8.2f}x")
-        print()
-
-    # 2. Reordering 对比
-    print("\n### 2. Reordering 效果对比 (Ramulator OFF)")
-    print(f"\n{'Batch/GPU':<12} {'Seq Len':<10} {'Reorder ON':<14} {'Reorder OFF':<14} {'Improvement':<12} {'Ratio':<8}")
-    print("-" * 70)
-
-    for seq_len in SEQ_LENGTHS:
-        for batch in BATCH_PER_GPU:
-            key_on = ("on", "off", seq_len, batch)
-            key_off = ("off", "off", seq_len, batch)
-            val_on = data.get(key_on, {}).get("total", 0.0) / 1e6
-            val_off = data.get(key_off, {}).get("total", 0.0) / 1e6
-            if val_on > 0 and val_off > 0:
-                improvement = ((val_off - val_on) / val_off) * 100
-                ratio = val_off / val_on
-                print(f"{batch:<12} {seq_len:<10} {val_on:<14.2f} {val_off:<14.2f} {improvement:<11.1f}% {ratio:<8.2f}x")
-        print()
-
-    # 3. Reordering 对比 (Ramulator ON)
-    print("\n### 3. Reordering 效果对比 (Ramulator ON)")
-    print(f"\n{'Batch/GPU':<12} {'Seq Len':<10} {'Reorder ON':<14} {'Reorder OFF':<14} {'Improvement':<12} {'Ratio':<8}")
-    print("-" * 70)
-
-    for seq_len in SEQ_LENGTHS:
-        for batch in BATCH_PER_GPU:
-            key_on = ("on", "on", seq_len, batch)
-            key_off = ("off", "on", seq_len, batch)
-            val_on = data.get(key_on, {}).get("total", 0.0) / 1e6
-            val_off = data.get(key_off, {}).get("total", 0.0) / 1e6
-            if val_on > 0 and val_off > 0:
-                improvement = ((val_off - val_on) / val_off) * 100
-                ratio = val_off / val_on
-                print(f"{batch:<12} {seq_len:<10} {val_on:<14.2f} {val_off:<14.2f} {improvement:<11.1f}% {ratio:<8.2f}x")
-        print()
-
-    # 4. 详细分解
-    print("\n### 4. 注意力机制分解 (Reordering ON, Ramulator OFF)")
-    print(f"\n{'Batch/GPU':<12} {'Seq Len':<10} {'KV Decomp':<12} {'Score+Ctx':<12} {'Out Proj':<12} {'Etc':<12} {'Total':<12}")
-    print("-" * 70)
-
-    for seq_len in SEQ_LENGTHS:
-        for batch in BATCH_PER_GPU:
-            key = ("on", "off", seq_len, batch)
-            r = data.get(key, {})
-            kv = r.get("kv_decompress", 0.0) / 1e6
-            score = r.get("score_context", 0.0) / 1e6
-            out = r.get("out_proj", 0.0) / 1e6
-            etc = r.get("etc", 0.0) / 1e6
-            total = r.get("total", 0.0) / 1e6
-            print(f"{batch:<12} {seq_len:<10} {kv:<12.2f} {score:<12.2f} {out:<12.2f} {etc:<12.2f} {total:<12.2f}")
-        print()
+def result_index(rows: list[dict[str, Any]]) -> dict[tuple[str, str, int, int], dict[str, Any]]:
+    return {
+        (str(r["reorder"]), str(r["ramulator"]), int(r["seq_len"]), int(r["batch_size"])): r
+        for r in rows
+    }
 
 
-def plot_hbm3e_comparison(rows):
-    """Generate HBM3E comparison plots."""
+def print_table(rows: list[dict[str, Any]]) -> None:
+    data = result_index(rows)
+    print("\nHBM3E Ramulator hierarchy summary")
+    print("=" * 112)
+    print(
+        f"{'Reorder':<8} {'Seq':<6} {'Batch/GPU':<10} "
+        f"{'Ideal ms':>10} {'Ramulator ms':>13} {'Ratio':>8} "
+        f"{'ACT':>12} {'READ':>12} {'WRITE':>12} {'REF':>10} "
+        f"{'mem_dur ms':>11} {'bg_time ms':>11}"
+    )
+    print("-" * 112)
+
+    for reorder in REORDERING_MODES:
+        for seq_len in SEQ_LENGTHS:
+            for batch in BATCH_PER_GPU:
+                off = data.get((reorder, "off", seq_len, batch))
+                on = data.get((reorder, "on", seq_len, batch))
+                if not off and not on:
+                    continue
+                ideal_ms = off.get("latency_ms", 0.0) if off else 0.0
+                ramul_ms = on.get("latency_ms", 0.0) if on else 0.0
+                ratio = ramul_ms / ideal_ms if ideal_ms > 0 and ramul_ms > 0 else 0.0
+                counts = on or off or {}
+                print(
+                    f"{reorder:<8} {seq_len:<6} {batch:<10} "
+                    f"{ideal_ms:>10.2f} {ramul_ms:>13.2f} {ratio:>8.2f} "
+                    f"{counts.get('act_count', 0.0):>12.0f} "
+                    f"{counts.get('read_count', 0.0):>12.0f} "
+                    f"{counts.get('write_count', 0.0):>12.0f} "
+                    f"{counts.get('ref_count', 0.0):>10.0f} "
+                    f"{counts.get('memory_duration_ms', 0.0):>11.2f} "
+                    f"{counts.get('background_time_ms', 0.0):>11.2f}"
+                )
+            print()
+
+
+def generate_plots(rows: list[dict[str, Any]]) -> None:
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     import numpy as np
 
     PLOT_DIR.mkdir(parents=True, exist_ok=True)
+    data = result_index(rows)
 
-    data = {(r["reorder"], r["ramulator"], r["seq_len"], r["batch_size"]): r for r in rows}
-
-    # Figure 1: Ramulator comparison
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
-
-    # First pass: collect all values to determine y-axis range
-    all_vals = []
-    for seq_len in SEQ_LENGTHS:
-        for batch in BATCH_PER_GPU:
-            key_off = ("on", "off", seq_len, batch)
-            key_on = ("on", "on", seq_len, batch)
-            all_vals.append(data.get(key_off, {}).get("total", 0.0) / 1e6)
-            all_vals.append(data.get(key_on, {}).get("total", 0.0) / 1e6)
-    y_min = min(v for v in all_vals if v > 0) * 0.8
-    y_max = max(all_vals) * 1.3
-
-    for idx, seq_len in enumerate(SEQ_LENGTHS):
-        ax = axes[idx]
-        x = np.arange(len(BATCH_PER_GPU))
-        width = 0.35
-
-        ideal_vals = []
-        ramul_vals = []
-        for batch in BATCH_PER_GPU:
-            key_off = ("on", "off", seq_len, batch)
-            key_on = ("on", "on", seq_len, batch)
-            ideal_vals.append(data.get(key_off, {}).get("total", 0.0) / 1e6)
-            ramul_vals.append(data.get(key_on, {}).get("total", 0.0) / 1e6)
-
-        ax.bar(x - width/2, ideal_vals, width, label="Ideal", color="#2196F3", edgecolor="black", lw=0.5)
-        ax.bar(x + width/2, ramul_vals, width, label="Ramulator", color="#FF5722", edgecolor="black", lw=0.5)
-
-        ax.set_xlabel("Batch per GPU")
-        if idx == 0:
-            ax.set_ylabel("Latency (ms)")
-        ax.set_title(f"Seq Len = {seq_len}")
-        ax.set_xticks(x)
-        ax.set_xticklabels(BATCH_PER_GPU)
-        if idx == 0:
-            ax.legend()
-        ax.grid(axis="y", alpha=0.3)
-        ax.set_yscale("log")
-        ax.set_ylim(y_min, y_max)
-
-        # Add ratio labels
-        for i, (iv, rv) in enumerate(zip(ideal_vals, ramul_vals)):
-            if iv > 0:
-                ratio = rv / iv
-                ax.text(i, max(iv, rv) * 1.02, f"{ratio:.2f}x", ha="center", fontsize=8)
-
-    fig.tight_layout()
-    fig.savefig(PLOT_DIR / "hbm3e_ramulator_comparison.png", dpi=200, bbox_inches="tight")
-    print(f"Saved {PLOT_DIR / 'hbm3e_ramulator_comparison.png'}")
-
-    # Figure 1b: Ramulator comparison (Reordering OFF)
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
-
-    # First pass: collect all values to determine y-axis range
-    all_vals_off = []
-    for seq_len in SEQ_LENGTHS:
-        for batch in BATCH_PER_GPU:
-            key_off = ("off", "off", seq_len, batch)
-            key_on = ("off", "on", seq_len, batch)
-            all_vals_off.append(data.get(key_off, {}).get("total", 0.0) / 1e6)
-            all_vals_off.append(data.get(key_on, {}).get("total", 0.0) / 1e6)
-    y_min_off = min(v for v in all_vals_off if v > 0) * 0.8
-    y_max_off = max(all_vals_off) * 1.3
-
-    for idx, seq_len in enumerate(SEQ_LENGTHS):
-        ax = axes[idx]
-        x = np.arange(len(BATCH_PER_GPU))
-        width = 0.35
-
-        ideal_vals = []
-        ramul_vals = []
-        for batch in BATCH_PER_GPU:
-            key_off = ("off", "off", seq_len, batch)
-            key_on = ("off", "on", seq_len, batch)
-            ideal_vals.append(data.get(key_off, {}).get("total", 0.0) / 1e6)
-            ramul_vals.append(data.get(key_on, {}).get("total", 0.0) / 1e6)
-
-        ax.bar(x - width/2, ideal_vals, width, label="Ideal", color="#2196F3", edgecolor="black", lw=0.5)
-        ax.bar(x + width/2, ramul_vals, width, label="Ramulator", color="#FF5722", edgecolor="black", lw=0.5)
-
-        ax.set_xlabel("Batch per GPU")
-        if idx == 0:
-            ax.set_ylabel("Latency (ms)")
-        ax.set_title(f"Seq Len = {seq_len}")
-        ax.set_xticks(x)
-        ax.set_xticklabels(BATCH_PER_GPU)
-        if idx == 0:
-            ax.legend()
-        ax.grid(axis="y", alpha=0.3)
-        ax.set_yscale("log")
-        ax.set_ylim(y_min_off, y_max_off)
-
-        # Add ratio labels
-        for i, (iv, rv) in enumerate(zip(ideal_vals, ramul_vals)):
-            if iv > 0:
-                ratio = rv / iv
-                ax.text(i, max(iv, rv) * 1.02, f"{ratio:.2f}x", ha="center", fontsize=8)
-
-    fig.tight_layout()
-    fig.savefig(PLOT_DIR / "hbm3e_ramulator_comparison_no_reorder.png", dpi=200, bbox_inches="tight")
-    print(f"Saved {PLOT_DIR / 'hbm3e_ramulator_comparison_no_reorder.png'}")
-
-    # Figure 2: Reordering comparison
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-
-    for idx, seq_len in enumerate(SEQ_LENGTHS):
-        ax = axes[idx]
-        x = np.arange(len(BATCH_PER_GPU))
-        width = 0.35
-
-        reorder_on = []
-        reorder_off = []
-        for batch in BATCH_PER_GPU:
-            key_on = ("on", "off", seq_len, batch)
-            key_off = ("off", "off", seq_len, batch)
-            reorder_on.append(data.get(key_on, {}).get("total", 0.0) / 1e6)
-            reorder_off.append(data.get(key_off, {}).get("total", 0.0) / 1e6)
-
-        ax.bar(x - width/2, reorder_on, width, label="Reorder ON", color="#4CAF50", edgecolor="black", lw=0.5)
-        ax.bar(x + width/2, reorder_off, width, label="Reorder OFF", color="#F44336", edgecolor="black", lw=0.5)
-
-        ax.set_xlabel("Batch per GPU")
-        ax.set_ylabel("Latency (ms)")
-        ax.set_title(f"Seq Len = {seq_len}")
-        ax.set_xticks(x)
-        ax.set_xticklabels(BATCH_PER_GPU)
-        ax.legend()
-        ax.grid(axis="y", alpha=0.3)
-        ax.set_yscale("log")
-
-        # Add ratio labels
-        for i, (on, off) in enumerate(zip(reorder_on, reorder_off)):
-            if on > 0:
-                ratio = off / on
-                ax.text(i, max(on, off) * 1.02, f"{ratio:.1f}x", ha="center", fontsize=8)
-
-    fig.suptitle("HBM3E: Reordering Impact on Latency (Ramulator OFF)", fontsize=14)
-    fig.tight_layout()
-    fig.savefig(PLOT_DIR / "hbm3e_reordering_comparison.png", dpi=200, bbox_inches="tight")
-    print(f"Saved {PLOT_DIR / 'hbm3e_reordering_comparison.png'}")
-
-    # Figure 3: Breakdown comparison
-    categories = ["kv_decompress", "score_context", "out_proj", "etc"]
-    cat_labels = ["KV decompress", "Score + Context", "Out projection", "Etc"]
-    cat_colors = ["#d7191c", "#f6c744", "#a8cf8d", "#d9d9d9"]
-
-    fig, axes = plt.subplots(2, 2, figsize=(14, 12))
-
-    for idx, (reorder, ramul) in enumerate([("on", "off"), ("on", "on"), ("off", "off"), ("off", "on")]):
-        ax = axes[idx // 2][idx % 2]
-        x = np.arange(len(BATCH_PER_GPU))
-        width = 0.6
-
-        bottoms = np.zeros(len(BATCH_PER_GPU))
-        for ci, cat in enumerate(categories):
-            vals = []
+    for reorder in REORDERING_MODES:
+        fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
+        vals = []
+        for seq_len in SEQ_LENGTHS:
             for batch in BATCH_PER_GPU:
-                key = (reorder, ramul, 4096, batch)
-                v = float(data.get(key, {}).get(cat, 0.0)) / 1e6
-                vals.append(v)
-            ax.bar(x, vals, width, bottom=bottoms, color=cat_colors[ci],
-                   edgecolor="black", lw=0.3, label=cat_labels[ci] if idx == 0 else "")
-            bottoms += np.array(vals)
+                for ramul in RAMULATOR_MODES:
+                    row = data.get((reorder, ramul, seq_len, batch))
+                    if row:
+                        vals.append(row["latency_ms"])
+        positive_vals = [v for v in vals if v > 0]
+        y_min = min(positive_vals) * 0.8 if positive_vals else 1
+        y_max = max(positive_vals) * 1.3 if positive_vals else 10
 
+        for idx, seq_len in enumerate(SEQ_LENGTHS):
+            ax = axes[idx]
+            x = np.arange(len(BATCH_PER_GPU))
+            width = 0.35
+            ideal_vals = []
+            ramul_vals = []
+            for batch in BATCH_PER_GPU:
+                ideal_vals.append(data.get((reorder, "off", seq_len, batch), {}).get("latency_ms", 0.0))
+                ramul_vals.append(data.get((reorder, "on", seq_len, batch), {}).get("latency_ms", 0.0))
+
+            ax.bar(x - width / 2, ideal_vals, width, label="Ramulator off", color="#4C78A8")
+            ax.bar(x + width / 2, ramul_vals, width, label="Ramulator on", color="#F58518")
+            ax.set_title(f"Seq len = {seq_len}")
+            ax.set_xlabel("Batch per GPU")
+            if idx == 0:
+                ax.set_ylabel("Latency (ms)")
+                ax.legend()
+            ax.set_xticks(x)
+            ax.set_xticklabels(BATCH_PER_GPU)
+            ax.set_yscale("log")
+            ax.set_ylim(y_min, y_max)
+            ax.grid(axis="y", alpha=0.3)
+            for i, (ideal, ramul) in enumerate(zip(ideal_vals, ramul_vals)):
+                if ideal > 0 and ramul > 0:
+                    ax.text(i, max(ideal, ramul) * 1.03, f"{ramul / ideal:.2f}x", ha="center", fontsize=8)
+
+        fig.suptitle(f"HBM3E Ramulator hierarchy impact, reordering {reorder.upper()}")
+        fig.tight_layout()
+        out = PLOT_DIR / f"hbm3e_ramulator_reorder_{reorder}.png"
+        fig.savefig(out, dpi=200, bbox_inches="tight")
+        print(f"Saved {out}")
+
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    count_specs = [
+        ("act_count", "ACT"),
+        ("read_count", "READ"),
+        ("write_count", "WRITE"),
+        ("ref_count", "REF"),
+    ]
+    seq_len = 4096
+    for ax, (field, title) in zip(axes.flat, count_specs):
+        x = np.arange(len(BATCH_PER_GPU))
+        width = 0.35
+        for offset, reorder in [(-width / 2, "on"), (width / 2, "off")]:
+            vals = [
+                data.get((reorder, "on", seq_len, batch), {}).get(field, 0.0)
+                for batch in BATCH_PER_GPU
+            ]
+            ax.bar(x + offset, vals, width, label=f"reorder {reorder}")
+        ax.set_title(f"{title} count, Ramulator on, L={seq_len}")
         ax.set_xlabel("Batch per GPU")
-        ax.set_ylabel("Latency (ms)")
-        ax.set_title(f"Reorder={reorder.upper()}, Ramulator={ramul.upper()} (L=4096)")
+        ax.set_ylabel("Average command count")
         ax.set_xticks(x)
         ax.set_xticklabels(BATCH_PER_GPU)
         ax.grid(axis="y", alpha=0.3)
-        ax.set_yscale("log")
-        if idx == 0:
-            ax.legend(fontsize=8, loc="upper left", ncol=2)
-
-    fig.suptitle("HBM3E: Attention Breakdown by Configuration", fontsize=14)
+        ax.legend()
     fig.tight_layout()
-    fig.savefig(PLOT_DIR / "hbm3e_attention_breakdown.png", dpi=200, bbox_inches="tight")
-    print(f"Saved {PLOT_DIR / 'hbm3e_attention_breakdown.png'}")
+    out = PLOT_DIR / "hbm3e_ramulator_command_counts.png"
+    fig.savefig(out, dpi=200, bbox_inches="tight")
+    print(f"Saved {out}")
 
 
-def main():
-    import argparse
-    parser = argparse.ArgumentParser()
+def generate_report(rows: list[dict[str, Any]]) -> None:
+    data = result_index(rows)
+    lines = [
+        "# HBM3E Ramulator Hierarchy Report",
+        "",
+        "This directory now contains only the HBM3E experiment matrix:",
+        "",
+        "- Reordering: on/off",
+        "- Sequence length: 2048/4096/8192",
+        "- Batch per GPU: 32/64/128/256",
+        "- Ramulator hierarchy simulation: on/off",
+        "",
+        "The raw simulator CSV already includes ACT/READ/WRITE/REF command counts.",
+        "`memory_duration` is memory service time. `background_time` is the DRAM background/standby energy time base accumulated from execution durations; it is intentionally kept separate from `memory_duration`.",
+        "",
+        "## Latency And Command Counts",
+        "",
+        "| Reorder | Seq | Batch/GPU | Off ms | On ms | On/Off | ACT | READ | WRITE | REF | memory_duration ms | background_time ms |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for reorder in REORDERING_MODES:
+        for seq_len in SEQ_LENGTHS:
+            for batch in BATCH_PER_GPU:
+                off = data.get((reorder, "off", seq_len, batch))
+                on = data.get((reorder, "on", seq_len, batch))
+                if not off and not on:
+                    continue
+                off_ms = off.get("latency_ms", 0.0) if off else 0.0
+                on_ms = on.get("latency_ms", 0.0) if on else 0.0
+                ratio = on_ms / off_ms if off_ms > 0 and on_ms > 0 else 0.0
+                counts = on or off or {}
+                lines.append(
+                    f"| {reorder} | {seq_len} | {batch} | {off_ms:.2f} | {on_ms:.2f} | {ratio:.2f} | "
+                    f"{counts.get('act_count', 0.0):.0f} | {counts.get('read_count', 0.0):.0f} | "
+                    f"{counts.get('write_count', 0.0):.0f} | {counts.get('ref_count', 0.0):.0f} | "
+                    f"{counts.get('memory_duration_ms', 0.0):.2f} | {counts.get('background_time_ms', 0.0):.2f} |"
+                )
+    lines.extend(
+        [
+            "",
+            "## Output Files",
+            "",
+            "- Raw CSV: `data/result_hbm3e_b{B}_l{L}_reorder_{on|off}_ramul_{on|off}.csv`",
+            "- Summary CSV: `data/summary_hbm3e.csv`",
+            "- Plots: `plots/hbm3e_ramulator_*.png`",
+            "- Per-run configs: `configs/result_hbm3e_*.yaml`",
+            "- Per-run logs: `logs/result_hbm3e_*.log`",
+        ]
+    )
+    REPORT_PATH.write_text("\n".join(lines) + "\n")
+    print(f"Saved {REPORT_PATH}")
+
+
+def expected_names() -> set[str]:
+    names = set()
+    for reorder in REORDERING_MODES:
+        for seq_len in SEQ_LENGTHS:
+            for batch in BATCH_PER_GPU:
+                for ramul in RAMULATOR_MODES:
+                    names.add(f"result_hbm3e_b{batch}_l{seq_len}_reorder_{reorder}_ramul_{ramul}.csv")
+    return names
+
+
+def print_missing() -> None:
+    existing = {path.name for path in DATA_DIR.glob("result_hbm3e_b*_l*_reorder_*_ramul_*.csv")}
+    missing = sorted(expected_names() - existing)
+    extra = sorted(existing - expected_names())
+    if missing:
+        print("Missing expected HBM3E results:")
+        for name in missing:
+            print(f"  {name}")
+    if extra:
+        print("Extra HBM3E results outside the current matrix:")
+        for name in extra:
+            print(f"  {name}")
+    if not missing and not extra:
+        print("HBM3E result matrix is complete and contains no extra HBM3E CSVs.")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plot", action="store_true", help="Generate plots")
-    parser.add_argument("--table", action="store_true", help="Print comparison table")
-    parser.add_argument("--all", action="store_true", help="Generate plots and table")
+    parser.add_argument("--table", action="store_true", help="Print a compact table")
+    parser.add_argument("--report", action="store_true", help="Generate markdown report")
+    parser.add_argument("--missing", action="store_true", help="Show missing/extra result files")
+    parser.add_argument("--all", action="store_true", help="Generate summary, table, plots, and report")
     args = parser.parse_args()
 
-    if not (args.plot or args.table or args.all):
+    if not (args.plot or args.table or args.report or args.missing or args.all):
         args.all = True
 
-    rows = collect_hbm3e_results()
-    if not rows:
-        print("No HBM3E results found.")
-        return
-
+    rows = collect_results()
     print(f"Found {len(rows)} HBM3E result entries")
-
-    # Write summary
     write_summary_csv(DATA_DIR / "summary_hbm3e.csv", rows)
-    print(f"Saved summary to {DATA_DIR / 'summary_hbm3e.csv'}")
+    print(f"Saved {DATA_DIR / 'summary_hbm3e.csv'}")
 
+    if args.missing or args.all:
+        print_missing()
     if args.table or args.all:
-        print_comparison_table(rows)
-
+        print_table(rows)
     if args.plot or args.all:
-        plot_hbm3e_comparison(rows)
+        generate_plots(rows)
+    if args.report or args.all:
+        generate_report(rows)
 
 
 if __name__ == "__main__":
