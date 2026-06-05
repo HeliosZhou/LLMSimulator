@@ -11,6 +11,7 @@ from typing import Any, Iterable
 
 EXP_DIR = Path(__file__).resolve().parent
 DATA_DIR = EXP_DIR / "data"
+DRAMPOWER_DATA_DIR = EXP_DIR / "data_drampower"
 PLOT_DIR = EXP_DIR / "plots"
 REPORT_PATH = EXP_DIR / "HBM3E_ANALYSIS_REPORT.md"
 
@@ -36,6 +37,17 @@ ENERGY_FIELDS = [
     "ref_energy",
     "background_energy",
     "total_energy",
+]
+DRAMPOWER_ENERGY_FIELDS = [
+    "drampower_act_energy",
+    "drampower_read_energy",
+    "drampower_write_energy",
+    "drampower_all_act_energy",
+    "drampower_all_read_energy",
+    "drampower_all_write_energy",
+    "drampower_ref_energy",
+    "drampower_background_energy",
+    "drampower_total_energy",
 ]
 
 
@@ -84,7 +96,7 @@ def write_summary_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer.writerows(rows)
 
 
-def parse_result_name(path: Path) -> dict[str, int | str] | None:
+def parse_result_name(path: Path, drampower: str = "off") -> dict[str, int | str] | None:
     parts = path.stem.split("_")
     try:
         mem_type = parts[1]
@@ -102,6 +114,7 @@ def parse_result_name(path: Path) -> dict[str, int | str] | None:
         "seq_len": seq_len,
         "reorder": reorder,
         "ramulator": ramulator,
+        "drampower": drampower,
     }
 
 
@@ -135,17 +148,21 @@ def attention_breakdown(avg: dict[str, float]) -> dict[str, float]:
     }
 
 
-def summarize_file(path: Path) -> dict[str, Any] | None:
-    meta = parse_result_name(path)
+def summarize_file(path: Path, drampower: str = "off") -> dict[str, Any] | None:
+    rows = read_csv_rows(path)
+    meta = parse_result_name(path, drampower)
     if meta is None:
         return None
-    avg = average_rows(read_csv_rows(path), "t2t")
+    avg = average_rows(rows, "t2t")
     if not avg:
         return None
+    model_name = next((row.get("dram_energy_model", "") for row in rows if row.get("dram_energy_model")), "")
 
     latency_ns = avg.get("latency", avg.get("time", 0.0))
     row: dict[str, Any] = {
         **meta,
+        "source_dir": path.parent.name,
+        "dram_energy_model": model_name or ("hbm3e_drampower_style" if meta["drampower"] == "on" else "fgdram"),
         "latency_ns": latency_ns,
         "latency_ms": latency_ns / 1e6,
         "throughput_tokens_per_s": (
@@ -173,22 +190,34 @@ def summarize_file(path: Path) -> dict[str, Any] | None:
     row["background_time_ms"] = row["background_time_ns"] / 1e6
     for field in ENERGY_FIELDS:
         row[f"{field}_nJ"] = avg.get(field, 0.0)
+    for field in DRAMPOWER_ENERGY_FIELDS:
+        row[f"{field}_nJ"] = avg.get(field, 0.0)
     return row
 
 
 def collect_results() -> list[dict[str, Any]]:
     rows = []
     for csv_file in sorted(DATA_DIR.glob("result_hbm3e_b*_l*_reorder_*_ramul_*.csv")):
-        row = summarize_file(csv_file)
+        row = summarize_file(csv_file, "off")
         if row is not None:
             rows.append(row)
-    rows.sort(key=lambda r: (r["reorder"], r["ramulator"], r["seq_len"], r["batch_size"]))
+    for csv_file in sorted(DRAMPOWER_DATA_DIR.glob("result_hbm3e_b*_l*_reorder_*_ramul_*.csv")):
+        row = summarize_file(csv_file, "on")
+        if row is not None:
+            rows.append(row)
+    rows.sort(key=lambda r: (r["reorder"], r["ramulator"], r["drampower"], r["seq_len"], r["batch_size"]))
     return rows
 
 
-def result_index(rows: list[dict[str, Any]]) -> dict[tuple[str, str, int, int], dict[str, Any]]:
+def result_index(rows: list[dict[str, Any]]) -> dict[tuple[str, str, str, int, int], dict[str, Any]]:
     return {
-        (str(r["reorder"]), str(r["ramulator"]), int(r["seq_len"]), int(r["batch_size"])): r
+        (
+            str(r["reorder"]),
+            str(r["ramulator"]),
+            str(r.get("drampower", "off")),
+            int(r["seq_len"]),
+            int(r["batch_size"]),
+        ): r
         for r in rows
     }
 
@@ -208,8 +237,8 @@ def print_table(rows: list[dict[str, Any]]) -> None:
     for reorder in REORDERING_MODES:
         for seq_len in SEQ_LENGTHS:
             for batch in BATCH_PER_GPU:
-                off = data.get((reorder, "off", seq_len, batch))
-                on = data.get((reorder, "on", seq_len, batch))
+                off = data.get((reorder, "off", "off", seq_len, batch))
+                on = data.get((reorder, "on", "off", seq_len, batch))
                 if not off and not on:
                     continue
                 ideal_ms = off.get("latency_ms", 0.0) if off else 0.0
@@ -245,7 +274,7 @@ def generate_plots(rows: list[dict[str, Any]]) -> None:
         for seq_len in SEQ_LENGTHS:
             for batch in BATCH_PER_GPU:
                 for ramul in RAMULATOR_MODES:
-                    row = data.get((reorder, ramul, seq_len, batch))
+                    row = data.get((reorder, ramul, "off", seq_len, batch))
                     if row:
                         vals.append(row["latency_ms"])
         positive_vals = [v for v in vals if v > 0]
@@ -259,8 +288,8 @@ def generate_plots(rows: list[dict[str, Any]]) -> None:
             ideal_vals = []
             ramul_vals = []
             for batch in BATCH_PER_GPU:
-                ideal_vals.append(data.get((reorder, "off", seq_len, batch), {}).get("latency_ms", 0.0))
-                ramul_vals.append(data.get((reorder, "on", seq_len, batch), {}).get("latency_ms", 0.0))
+                ideal_vals.append(data.get((reorder, "off", "off", seq_len, batch), {}).get("latency_ms", 0.0))
+                ramul_vals.append(data.get((reorder, "on", "off", seq_len, batch), {}).get("latency_ms", 0.0))
 
             ax.bar(x - width / 2, ideal_vals, width, label="Ramulator off", color="#4C78A8")
             ax.bar(x + width / 2, ramul_vals, width, label="Ramulator on", color="#F58518")
@@ -297,7 +326,7 @@ def generate_plots(rows: list[dict[str, Any]]) -> None:
         width = 0.35
         for offset, reorder in [(-width / 2, "on"), (width / 2, "off")]:
             vals = [
-                data.get((reorder, "on", seq_len, batch), {}).get(field, 0.0)
+                data.get((reorder, "on", "off", seq_len, batch), {}).get(field, 0.0)
                 for batch in BATCH_PER_GPU
             ]
             ax.bar(x + offset, vals, width, label=f"reorder {reorder}")
@@ -325,9 +354,11 @@ def generate_report(rows: list[dict[str, Any]]) -> None:
         "- Sequence length: 2048/4096/8192",
         "- Batch per GPU: 32/64/128/256",
         "- Ramulator hierarchy simulation: on/off",
+        "- DRAMPower energy model: off/on",
         "",
         "The raw simulator CSV already includes ACT/READ/WRITE/REF command counts.",
         "`memory_duration` is memory service time. `background_time` is the DRAM background/standby energy time base accumulated from execution durations; it is intentionally kept separate from `memory_duration`.",
+        "`drampower=on` rows are read from `data_drampower/` and use the HBM3E DRAMPower-style current/timing model for DRAM energy while keeping latency and command counts unchanged.",
         "",
         "## Latency And Command Counts",
         "",
@@ -337,8 +368,8 @@ def generate_report(rows: list[dict[str, Any]]) -> None:
     for reorder in REORDERING_MODES:
         for seq_len in SEQ_LENGTHS:
             for batch in BATCH_PER_GPU:
-                off = data.get((reorder, "off", seq_len, batch))
-                on = data.get((reorder, "on", seq_len, batch))
+                off = data.get((reorder, "off", "off", seq_len, batch))
+                on = data.get((reorder, "on", "off", seq_len, batch))
                 if not off and not on:
                     continue
                 off_ms = off.get("latency_ms", 0.0) if off else 0.0
@@ -354,9 +385,35 @@ def generate_report(rows: list[dict[str, Any]]) -> None:
     lines.extend(
         [
             "",
+            "## DRAMPower Energy",
+            "",
+            "| Reorder | Ramulator | Seq | Batch/GPU | ACT nJ | READ nJ | WRITE nJ | REF nJ | Background nJ | Total nJ |",
+            "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for reorder in REORDERING_MODES:
+        for ramul in RAMULATOR_MODES:
+            for seq_len in SEQ_LENGTHS:
+                for batch in BATCH_PER_GPU:
+                    row = data.get((reorder, ramul, "on", seq_len, batch))
+                    if not row:
+                        continue
+                    lines.append(
+                        f"| {reorder} | {ramul} | {seq_len} | {batch} | "
+                        f"{row.get('drampower_act_energy_nJ', 0.0):.2f} | "
+                        f"{row.get('drampower_read_energy_nJ', 0.0):.2f} | "
+                        f"{row.get('drampower_write_energy_nJ', 0.0):.2f} | "
+                        f"{row.get('drampower_ref_energy_nJ', 0.0):.2f} | "
+                        f"{row.get('drampower_background_energy_nJ', 0.0):.2f} | "
+                        f"{row.get('drampower_total_energy_nJ', 0.0):.2f} |"
+                    )
+    lines.extend(
+        [
+            "",
             "## Output Files",
             "",
             "- Raw CSV: `data/result_hbm3e_b{B}_l{L}_reorder_{on|off}_ramul_{on|off}.csv`",
+            "- DRAMPower CSV: `data_drampower/result_hbm3e_b{B}_l{L}_reorder_{on|off}_ramul_{on|off}.csv`",
             "- Summary CSV: `data/summary_hbm3e.csv`",
             "- Plots: `plots/hbm3e_ramulator_*.png`",
             "- Per-run configs: `configs/result_hbm3e_*.yaml`",
@@ -378,19 +435,25 @@ def expected_names() -> set[str]:
 
 
 def print_missing() -> None:
-    existing = {path.name for path in DATA_DIR.glob("result_hbm3e_b*_l*_reorder_*_ramul_*.csv")}
-    missing = sorted(expected_names() - existing)
-    extra = sorted(existing - expected_names())
-    if missing:
-        print("Missing expected HBM3E results:")
-        for name in missing:
-            print(f"  {name}")
-    if extra:
-        print("Extra HBM3E results outside the current matrix:")
-        for name in extra:
-            print(f"  {name}")
-    if not missing and not extra:
-        print("HBM3E result matrix is complete and contains no extra HBM3E CSVs.")
+    any_issue = False
+    for label, directory in [("baseline", DATA_DIR), ("drampower", DRAMPOWER_DATA_DIR)]:
+        existing = {path.name for path in directory.glob("result_hbm3e_b*_l*_reorder_*_ramul_*.csv")}
+        missing = sorted(expected_names() - existing)
+        extra = sorted(existing - expected_names())
+        if missing:
+            any_issue = True
+            print(f"Missing expected HBM3E {label} results:")
+            for name in missing:
+                print(f"  {name}")
+        if extra:
+            any_issue = True
+            print(f"Extra HBM3E {label} results outside the current matrix:")
+            for name in extra:
+                print(f"  {name}")
+        if not missing and not extra:
+            print(f"HBM3E {label} result matrix is complete and contains no extra HBM3E CSVs.")
+    if not DRAMPOWER_DATA_DIR.exists():
+        print("DRAMPower result directory does not exist; run with DRAMPOWER=on to generate it.")
 
 
 def main() -> None:

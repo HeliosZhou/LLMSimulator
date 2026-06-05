@@ -10,9 +10,21 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 BUILD_DIR="$PROJECT_DIR/build"
 EXP_DIR="$PROJECT_DIR/experiments/exp_mem_arch"
-DATA_DIR="$EXP_DIR/data"
-CONFIG_DIR="$EXP_DIR/configs"
-LOG_DIR="$EXP_DIR/logs"
+DRAMPOWER_MODE="${DRAMPOWER:-off}"
+if [[ "$DRAMPOWER_MODE" != "on" && "$DRAMPOWER_MODE" != "off" ]]; then
+  echo "DRAMPOWER must be 'on' or 'off', got '$DRAMPOWER_MODE'" >&2
+  exit 1
+fi
+
+if [[ "$DRAMPOWER_MODE" == "on" ]]; then
+  DATA_DIR="$EXP_DIR/data_drampower"
+  CONFIG_DIR="$EXP_DIR/configs_drampower"
+  LOG_DIR="$EXP_DIR/logs_drampower"
+else
+  DATA_DIR="$EXP_DIR/data"
+  CONFIG_DIR="$EXP_DIR/configs"
+  LOG_DIR="$EXP_DIR/logs"
+fi
 PLOT_DIR="$EXP_DIR/plots"
 
 mkdir -p "$DATA_DIR" "$CONFIG_DIR" "$LOG_DIR" "$PLOT_DIR"
@@ -44,6 +56,7 @@ echo "Reordering modes: ${REORDERING_MODES[*]}"
 echo "Seq lengths: ${SEQ_LENGTHS[*]}"
 echo "Batch/GPU: ${BATCH_SIZES[*]}"
 echo "Ramulator modes: ${RAMULATOR_MODES[*]}"
+echo "DRAMPower mode: $DRAMPOWER_MODE"
 echo "Total combinations: $TOTAL"
 echo "==========================================="
 
@@ -61,12 +74,12 @@ for REORDER in "${REORDERING_MODES[@]}"; do
         fi
 
         echo ""
-        echo ">>> HBM3E reorder=${REORDER} ramulator=${RAMUL} batch/GPU=${BATCH} seq=${SEQ_LEN}"
+        echo ">>> HBM3E reorder=${REORDER} ramulator=${RAMUL} drampower=${DRAMPOWER_MODE} batch/GPU=${BATCH} seq=${SEQ_LEN}"
 
         TMP_RUN_DIR="$(mktemp -d "$DATA_DIR/.tmp_${RESULT_NAME%.csv}.XXXXXX")"
         CONFIG_PATH="$CONFIG_DIR/$CONFIG_NAME"
 
-        python3 - "$BUILD_DIR/config.yaml" "$CONFIG_PATH" "$TMP_RUN_DIR" "$REORDER" "$RAMUL" "$BATCH" "$SEQ_LEN" <<'PY'
+        python3 - "$BUILD_DIR/config.yaml" "$CONFIG_PATH" "$TMP_RUN_DIR" "$REORDER" "$RAMUL" "$DRAMPOWER_MODE" "$BATCH" "$SEQ_LEN" <<'PY'
 import sys
 from pathlib import Path
 
@@ -77,8 +90,9 @@ config_path = Path(sys.argv[2])
 output_dir = Path(sys.argv[3])
 reorder = sys.argv[4]
 ramulator = sys.argv[5]
-batch_per_gpu = int(sys.argv[6])
-seq_len = int(sys.argv[7])
+drampower = sys.argv[6]
+batch_per_gpu = int(sys.argv[7])
+seq_len = int(sys.argv[8])
 
 num_node = 4
 num_device = 8
@@ -105,6 +119,7 @@ opt["hetero_subbatch"] = False
 opt["disagg_system"] = False
 opt["use_low_unit_moe_only"] = False
 opt["use_ramulator"] = ramulator == "on"
+opt["use_drampower"] = drampower == "on"
 opt["prefill_mode"] = False
 opt["decode_mode"] = True
 
@@ -150,7 +165,10 @@ PY
         fi
         popd >/dev/null
 
-        LATEST_CSV="$(find "$TMP_RUN_DIR" -maxdepth 1 -type f -name '*.csv' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
+        LATEST_CSV=""
+        if [[ -d "$TMP_RUN_DIR" ]]; then
+          LATEST_CSV="$(find "$TMP_RUN_DIR" -maxdepth 1 -type f -name '*.csv' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
+        fi
         if [[ -n "$LATEST_CSV" ]]; then
           mv "$LATEST_CSV" "$DATA_DIR/$RESULT_NAME"
           echo "  [OK] saved $RESULT_NAME"
