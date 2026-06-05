@@ -1,119 +1,113 @@
-# HBM3E DRAMPower Analysis
+# HBM3E DRAMPower 实验分析
 
-This report summarizes the 48 DRAMPower-enabled HBM3E runs in
-`data_drampower/`.
+本文总结 `data_drampower/` 目录下 48 组启用 DRAMPower 的 HBM3E 实验结果。
 
-## Scope
+## 实验范围
 
-- Reordering: on/off
-- Sequence length: 2048/4096/8192
-- Batch per GPU: 32/64/128/256
-- Ramulator hierarchy simulation: on/off
-- DRAMPower rows in `data/summary_hbm3e.csv`: 48
+- Reorder：on/off
+- Sequence length：2048/4096/8192
+- Batch per GPU：32/64/128/256
+- Ramulator 层级仿真：on/off
+- `data/summary_hbm3e.csv` 中 `drampower=on` 的行数：48
 
-Each `t2t` row is one decode step for the whole active batch. The energy fields
-are whole-step energy values. Average per-token energy is computed as
-`drampower_total_energy / numtoken`.
+每一行 `t2t` 表示一次 batch decode step。也就是说，这是当前 active
+batch 中每条序列各生成 1 个 token 的整批 step 能耗，不是单条序列的单
+token 能耗。平均单 token 能耗按如下方式计算：
 
-## Overall Ranges
+```text
+drampower_total_energy / numtoken
+```
 
-| Metric | Min | Avg | Max |
+## 总体范围
+
+| 指标 | 最小值 | 平均值 | 最大值 |
 |---|---:|---:|---:|
-| Latency (ms) | 8.10 | 254.10 | 1883.74 |
-| DRAMPower total energy (J/step) | 38.06 | 1309.56 | 9389.26 |
-| DRAMPower background energy (J/step) | 0.78 | 39.29 | 301.47 |
-| Per-token DRAMPower energy (J/token) | 0.0080 | 0.3481 | 1.1779 |
-| Memory duration (ms) | 311.81 | 265850.12 | 2702974.28 |
-| Background time (ms) | 154.74 | 7751.27 | 59476.13 |
+| 延迟 (ms) | 8.10 | 254.10 | 1883.74 |
+| DRAMPower 总能耗 (J/step) | 38.06 | 1309.56 | 9389.26 |
+| DRAMPower 背景/静态能耗 (J/step) | 0.78 | 39.29 | 301.47 |
+| 平均单 token DRAMPower 能耗 (J/token) | 0.0080 | 0.3481 | 1.1779 |
+| memory_duration (ms) | 311.81 | 265850.12 | 2702974.28 |
+| background_time (ms) | 154.74 | 7751.27 | 59476.13 |
 
-## Energy Breakdown
+## 能耗构成
 
-Average contribution to `drampower_total_energy`:
+各项在 `drampower_total_energy` 中的占比：
 
-| Component | Min % | Avg % | Max % |
+| 组成项 | 最小占比 | 平均占比 | 最大占比 |
 |---|---:|---:|---:|
-| ACT | 5.50 | 7.57 | 12.65 |
-| READ | 49.90 | 68.96 | 91.22 |
-| WRITE | 1.09 | 20.75 | 40.31 |
-| REF | 0.00 | 0.00 | 0.00 |
-| Background/static | 1.92 | 2.72 | 3.21 |
+| ACT | 5.50% | 7.57% | 12.65% |
+| READ | 49.90% | 68.96% | 91.22% |
+| WRITE | 1.09% | 20.75% | 40.31% |
+| REF | 0.00% | 0.00% | 0.00% |
+| 背景/静态 | 1.92% | 2.72% | 3.21% |
 
-READ dominates when reordering is enabled. With reordering disabled, WRITE
-energy becomes much larger because write command counts rise sharply.
+开启 reorder 时，READ 能耗占主导。关闭 reorder 后，WRITE 命令数量大幅上升，
+WRITE 能耗占比也显著提高。
 
-## Group Averages
+## 分组平均值
 
-| Reorder | Ramulator | Latency ms | Energy J/step | J/token | Background % | READ % | WRITE % | ACT % |
+| Reorder | Ramulator | 延迟 ms | 能耗 J/step | J/token | 背景占比 | READ 占比 | WRITE 占比 | ACT 占比 |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| on | on | 22.86 | 61.93 | 0.0235 | 2.86 | 82.93 | 2.85 | 11.36 |
-| on | off | 19.31 | 60.40 | 0.0224 | 2.02 | 89.54 | 2.91 | 5.54 |
-| off | on | 524.99 | 2595.93 | 0.6834 | 3.20 | 50.88 | 38.03 | 7.89 |
-| off | off | 449.25 | 2519.99 | 0.6629 | 2.80 | 52.48 | 39.22 | 5.50 |
+| on | on | 22.86 | 61.93 | 0.0235 | 2.86% | 82.93% | 2.85% | 11.36% |
+| on | off | 19.31 | 60.40 | 0.0224 | 2.02% | 89.54% | 2.91% | 5.54% |
+| off | on | 524.99 | 2595.93 | 0.6834 | 3.20% | 50.88% | 38.03% | 7.89% |
+| off | off | 449.25 | 2519.99 | 0.6629 | 2.80% | 52.48% | 39.22% | 5.50% |
 
-## Ramulator Effect
+## Ramulator 层级仿真的影响
 
-For the same reorder/sequence/batch setting, enabling Ramulator hierarchy
-simulation changes the metrics as follows:
+在相同 reorder、sequence、batch 设置下，开启 Ramulator 层级仿真后的变化：
 
-| Metric | Min ratio | Avg ratio | Max ratio |
+| 指标 | 最小倍率 | 平均倍率 | 最大倍率 |
 |---|---:|---:|---:|
-| Latency, Ramulator on/off | 1.11 | 1.19 | 1.31 |
-| DRAMPower energy, Ramulator on/off | 0.98 | 1.03 | 1.07 |
-| Memory duration, Ramulator on/off | 1.01 | 1.07 | 1.27 |
+| 延迟，Ramulator on/off | 1.11 | 1.19 | 1.31 |
+| DRAMPower 能耗，Ramulator on/off | 0.98 | 1.03 | 1.07 |
+| memory_duration，Ramulator on/off | 1.01 | 1.07 | 1.27 |
 
-Ramulator mainly increases latency and memory service duration. DRAMPower energy
-changes only moderately because command counts are close to the ideal-memory
-case; the hierarchy model primarily exposes scheduling/waiting cost.
+Ramulator 层级仿真主要拉高延迟和 memory service duration。DRAMPower 总能耗
+变化相对温和，因为它主要由命令计数驱动，而 Ramulator on/off 下命令计数差异
+没有 reorder on/off 那么大；层级仿真更多体现为调度、排队和等待成本。
 
-## Reordering Effect
+## Reorder 的影响
 
-For the same Ramulator/sequence/batch setting, disabling reordering is much more
-expensive:
+在相同 Ramulator、sequence、batch 设置下，关闭 reorder 的代价非常明显：
 
-| Metric | Min ratio | Avg ratio | Max ratio |
+| 指标 | 最小倍率 | 平均倍率 | 最大倍率 |
 |---|---:|---:|---:|
-| Latency, reorder off/on | 6.47 | 20.10 | 40.75 |
-| DRAMPower energy, reorder off/on | 8.11 | 34.93 | 78.32 |
-| READ count, reorder off/on | 5.11 | 20.77 | 46.34 |
-| WRITE count, reorder off/on | 221.26 | 521.64 | 898.83 |
+| 延迟，reorder off/on | 6.47 | 20.10 | 40.75 |
+| DRAMPower 能耗，reorder off/on | 8.11 | 34.93 | 78.32 |
+| READ count，reorder off/on | 5.11 | 20.77 | 46.34 |
+| WRITE count，reorder off/on | 221.26 | 521.64 | 898.83 |
 
-The dominant effect is command-count explosion when reordering is disabled,
-especially WRITE commands. This is the largest driver of energy growth in the
-48-run matrix.
+主要原因是关闭 reorder 后命令计数爆炸，尤其是 WRITE 命令。它是这 48 组实验
+中能耗增长最主要的来源。
 
-## Scaling By Sequence And Batch
+## Sequence 和 Batch 维度的扩展趋势
 
-Average across reorder and Ramulator settings:
+下面结果对 reorder 和 Ramulator 两个维度取平均：
 
-| Seq | Batch/GPU | Latency ms | Energy J/step | J/token | READ count | WRITE count | Background % |
+| Seq | Batch/GPU | 延迟 ms | 能耗 J/step | J/token | READ count | WRITE count | 背景占比 |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 2048 | 32 | 35.86 | 181.88 | 0.1776 | 926814787 | 507123417 | 2.70 |
-| 2048 | 64 | 66.23 | 328.33 | 0.1603 | 1579197006 | 1014179167 | 2.72 |
-| 2048 | 128 | 126.69 | 620.85 | 0.1516 | 2883961996 | 2028291481 | 2.71 |
-| 2048 | 256 | 247.72 | 1206.18 | 0.1472 | 5493492456 | 4056517870 | 2.69 |
-| 4096 | 32 | 62.85 | 326.91 | 0.3192 | 1572672067 | 1010439897 | 2.72 |
-| 4096 | 64 | 120.21 | 618.43 | 0.3020 | 2870911566 | 2020812127 | 2.73 |
-| 4096 | 128 | 234.66 | 1201.07 | 0.2932 | 5467391117 | 4041557401 | 2.72 |
-| 4096 | 256 | 463.68 | 2366.60 | 0.2889 | 10660350696 | 8083049710 | 2.71 |
-| 8192 | 32 | 116.82 | 616.99 | 0.6025 | 2864386627 | 2017072857 | 2.73 |
-| 8192 | 64 | 228.20 | 1198.67 | 0.5853 | 5454340686 | 4034078047 | 2.74 |
-| 8192 | 128 | 450.66 | 2361.47 | 0.5765 | 10634249357 | 8068089241 | 2.73 |
-| 8192 | 256 | 895.61 | 4687.36 | 0.5722 | 20994067176 | 16136113390 | 2.72 |
+| 2048 | 32 | 35.86 | 181.88 | 0.1776 | 926814787 | 507123417 | 2.70% |
+| 2048 | 64 | 66.23 | 328.33 | 0.1603 | 1579197006 | 1014179167 | 2.72% |
+| 2048 | 128 | 126.69 | 620.85 | 0.1516 | 2883961996 | 2028291481 | 2.71% |
+| 2048 | 256 | 247.72 | 1206.18 | 0.1472 | 5493492456 | 4056517870 | 2.69% |
+| 4096 | 32 | 62.85 | 326.91 | 0.3192 | 1572672067 | 1010439897 | 2.72% |
+| 4096 | 64 | 120.21 | 618.43 | 0.3020 | 2870911566 | 2020812127 | 2.73% |
+| 4096 | 128 | 234.66 | 1201.07 | 0.2932 | 5467391117 | 4041557401 | 2.72% |
+| 4096 | 256 | 463.68 | 2366.60 | 0.2889 | 10660350696 | 8083049710 | 2.71% |
+| 8192 | 32 | 116.82 | 616.99 | 0.6025 | 2864386627 | 2017072857 | 2.73% |
+| 8192 | 64 | 228.20 | 1198.67 | 0.5853 | 5454340686 | 4034078047 | 2.74% |
+| 8192 | 128 | 450.66 | 2361.47 | 0.5765 | 10634249357 | 8068089241 | 2.73% |
+| 8192 | 256 | 895.61 | 4687.36 | 0.5722 | 20994067176 | 16136113390 | 2.72% |
 
-Longer sequence lengths increase attention-related memory traffic and therefore
-raise both latency and energy. Larger batches raise total step energy, while
-average energy per generated token tends to decrease within the same sequence
-length because fixed per-step work is amortized across more tokens.
+Sequence length 增大会增加 attention 相关的访存流量，因此延迟和能耗都会上升。
+Batch 增大会提高整个 step 的总能耗，但在相同 sequence length 下，平均单 token
+能耗通常会下降，因为固定的 step 开销被更多 token 摊薄。
 
-## Key Takeaways
+## 关键结论
 
-1. DRAMPower total energy is dominated by READ traffic, except when reordering
-   is disabled, where WRITE traffic becomes a major component.
-2. Background/static energy is consistently visible but small, about 2.7% on
-   average.
-3. Ramulator hierarchy simulation increases latency by about 19% on average but
-   increases DRAMPower energy by only about 3% on average.
-4. Reordering is the main determinant of energy. Disabling it increases
-   DRAMPower energy by about 35x on average in this matrix.
-5. Use `drampower_total_energy / numtoken` for average generated-token DRAM
-   energy. The CSV energy fields themselves are whole-batch decode-step energy.
+1. DRAMPower 总能耗通常由 READ 主导；但关闭 reorder 后，WRITE 会成为非常重要的能耗组成。
+2. 背景/静态能耗稳定存在，但占比不高，平均约为 2.72%。
+3. Ramulator 层级仿真平均使延迟增加约 19%，但 DRAMPower 能耗平均只增加约 3%。
+4. Reorder 是决定能耗的关键因素。关闭 reorder 后，DRAMPower 能耗平均约为开启 reorder 的 34.93 倍。
+5. 若需要平均单生成 token 的 DRAM 能耗，应使用 `drampower_total_energy / numtoken`。CSV 中的能耗字段本身是整批 decode step 的能耗。
