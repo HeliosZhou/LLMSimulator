@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstdint>
 #include <list>
 #include <memory>
+#include <vector>
 
 #include "base/base.h"
 #include "base/config.h"
@@ -63,6 +65,7 @@ class DRAMInterface {
   Ramulator::IMemorySystem *memory_system;
 
   ExecStatus exec_status;
+  std::vector<std::int64_t> last_issued_dram_cmd_;
 
   long frontend_tick;
   long mem_tick;
