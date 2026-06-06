@@ -72,8 +72,10 @@ void DRAMInterface::updateStatus(const PIMRequest& pimrequest) {
     return static_cast<counter_t>(std::max<std::int64_t>(0, delta_issued_dram_cmd[idx]));
   };
 
-  time += (duration * memory_scale_factor * sample_scale);
-  exec_status.memory_duration += (duration * memory_scale_factor * sample_scale);
+  const time_ns scaled_duration = duration * memory_scale_factor * sample_scale;
+  time += scaled_duration;
+  exec_status.memory_duration += scaled_duration;
+  exec_status.background_time += scaled_duration;
 
   exec_status.act_count += scale_counter(get_delta(DRAMCommandType::kACT));
   exec_status.read_count += scale_counter(get_delta(DRAMCommandType::kREAD));

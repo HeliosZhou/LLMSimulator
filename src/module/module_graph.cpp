@@ -292,15 +292,18 @@ void TopModuleGraph::set_pop_status() {
 
     status.ref_energy +=
         exec_status.ref_count * dram_powers[processor_type].kREF_energy_j_;
-    status.background_time += exec_status.total_duration;
-    status.background_energy += exec_status.total_duration *
+    const time_ns background_time =
+        exec_status.background_time > 0 ? exec_status.background_time
+                                        : exec_status.total_duration;
+    status.background_time += background_time;
+    status.background_energy += background_time *
                                 dram_powers[processor_type].kBACKGROUND_power_nW_ *
                                 1e-9;
 
     if (device->config.use_drampower) {
       static const Ramulator::DRAMPower::HBM3EAdapter drampower;
       const auto drampower_energy = drampower.calculate(
-          to_drampower_counters(exec_status), exec_status.total_duration);
+          to_drampower_counters(exec_status), background_time);
       status.drampower_act_energy += drampower_energy.act_nj;
       status.drampower_read_energy += drampower_energy.read_nj;
       status.drampower_write_energy += drampower_energy.write_nj;
