@@ -149,6 +149,10 @@ int main(int argc, char *argv[]) {
     system_config.use_drampower =
         config["system"]["optimization"]["use_drampower"].as<bool>();
   }
+  if (config["system"]["optimization"]["dram_power_model"]) {
+    system_config.dram_power_model =
+        config["system"]["optimization"]["dram_power_model"].as<std::string>();
+  }
 
   system_config.use_flash_mla =
       config["system"]["optimization"]["use_flash_mla"].as<bool>();

@@ -7,6 +7,28 @@
 
 namespace llm_system {
 namespace {
+constexpr double kNanojoulesPerJoule = 1.0e9;
+
+struct LPDDR5PowerSpec {
+  double vdd = 1.2;
+  double idd0 = 56.25e-3;
+  double idd2n = 33.75e-3;
+  double idd3n = 35.0e-3;
+  double idd4r = 157.5e-3;
+  double idd4w = 135.0e-3;
+  double idd5 = 118.0e-3;
+  double ibeta = 56.25e-3;
+  double tck_ns = 0.7692307692307693;
+  double wck_to_ck = 2.0;
+  double tras_cycles = 10.0;
+  double trp_cycles = 10.0;
+  double trfc_cycles = 25.0;
+  double burst_length = 8.0;
+  double data_rate = 2.0;
+  double banks = 16.0;
+  double bw_power_fact_rho = 0.5;
+  double command_parallelism = 128.0;
+};
 
 Ramulator::DRAMPower::CommandCounters to_drampower_counters(
     const ExecStatus& exec_status) {
@@ -19,6 +41,85 @@ Ramulator::DRAMPower::CommandCounters to_drampower_counters(
       static_cast<std::uint64_t>(std::max<counter_t>(0, exec_status.all_write_count)),
       static_cast<std::uint64_t>(std::max<counter_t>(0, exec_status.ref_count)),
   };
+}
+
+double seconds_from_ns(double ns) { return std::max(0.0, ns) * 1.0e-9; }
+
+double seconds_from_cycles(double cycles, double tck_ns) {
+  return std::max(0.0, cycles) * std::max(0.0, tck_ns) * 1.0e-9;
+}
+
+double safe_positive(double value) { return std::max(0.0, value); }
+
+double lpddr5_act_energy_nj(const LPDDR5PowerSpec& spec,
+                            std::uint64_t count) {
+  const double tras = seconds_from_cycles(spec.tras_cycles, spec.tck_ns);
+  const double trp = seconds_from_cycles(spec.trp_cycles, spec.tck_ns);
+  const double i_theta =
+      ((spec.idd0 * (trp + tras)) - (spec.ibeta * trp)) / tras;
+  const double per_command_nj =
+      spec.vdd * safe_positive(i_theta - spec.idd3n) * tras *
+      kNanojoulesPerJoule;
+  return per_command_nj * spec.command_parallelism *
+         static_cast<double>(count);
+}
+
+double lpddr5_read_write_energy_nj(const LPDDR5PowerSpec& spec,
+                                   std::uint64_t count, double idd4) {
+  const double t_wck_ns = spec.tck_ns / spec.wck_to_ck;
+  const double burst_time =
+      seconds_from_cycles(spec.burst_length / spec.data_rate, t_wck_ns);
+  const double i_rho =
+      spec.bw_power_fact_rho * (spec.idd3n - spec.idd2n) + spec.idd2n;
+  const double i_2 = spec.idd3n + (spec.idd3n - i_rho);
+  const double per_command_nj =
+      spec.vdd * safe_positive(idd4 - i_2) * burst_time *
+      kNanojoulesPerJoule;
+  return per_command_nj * spec.command_parallelism *
+         static_cast<double>(count);
+}
+
+double lpddr5_ref_energy_nj(const LPDDR5PowerSpec& spec,
+                            std::uint64_t count) {
+  const double t_rfc = seconds_from_cycles(spec.trfc_cycles, spec.tck_ns);
+  const double i_rho =
+      spec.bw_power_fact_rho * (spec.idd3n - spec.idd2n) + spec.idd2n;
+  const double approx_idd3n = i_rho + spec.banks * (spec.idd3n - i_rho);
+  const double per_command_nj =
+      (1.0 / spec.banks) * spec.vdd *
+      safe_positive(spec.idd5 - approx_idd3n) * t_rfc *
+      kNanojoulesPerJoule;
+  return per_command_nj * spec.command_parallelism *
+         static_cast<double>(count);
+}
+
+double lpddr5_background_energy_nj(const LPDDR5PowerSpec& spec,
+                                   double background_time_ns) {
+  return spec.vdd * spec.idd2n * seconds_from_ns(background_time_ns) *
+         kNanojoulesPerJoule * spec.command_parallelism;
+}
+
+Ramulator::DRAMPower::EnergyBreakdown calculate_lpddr5_energy(
+    const Ramulator::DRAMPower::CommandCounters& counters,
+    double background_time_ns) {
+  static const LPDDR5PowerSpec spec;
+  Ramulator::DRAMPower::EnergyBreakdown energy;
+  energy.act_nj = lpddr5_act_energy_nj(spec, counters.act);
+  energy.read_nj = lpddr5_read_write_energy_nj(spec, counters.read, spec.idd4r);
+  energy.write_nj =
+      lpddr5_read_write_energy_nj(spec, counters.write, spec.idd4w);
+  energy.all_act_nj = lpddr5_act_energy_nj(spec, counters.all_act);
+  energy.all_read_nj =
+      lpddr5_read_write_energy_nj(spec, counters.all_read, spec.idd4r);
+  energy.all_write_nj =
+      lpddr5_read_write_energy_nj(spec, counters.all_write, spec.idd4w);
+  energy.ref_nj = lpddr5_ref_energy_nj(spec, counters.ref);
+  energy.background_nj = lpddr5_background_energy_nj(spec, background_time_ns);
+  energy.total_nj = energy.act_nj + energy.read_nj + energy.write_nj +
+                    energy.all_act_nj + energy.all_read_nj +
+                    energy.all_write_nj + energy.ref_nj +
+                    energy.background_nj;
+  return energy;
 }
 
 }  // namespace
@@ -301,9 +402,12 @@ void TopModuleGraph::set_pop_status() {
                                 1e-9;
 
     if (device->config.use_drampower) {
-      static const Ramulator::DRAMPower::HBM3EAdapter drampower;
-      const auto drampower_energy = drampower.calculate(
-          to_drampower_counters(exec_status), background_time);
+      static const Ramulator::DRAMPower::HBM3EAdapter hbm3e_drampower;
+      const auto counters = to_drampower_counters(exec_status);
+      const auto drampower_energy =
+          device->config.dram_power_model == "lpddr5"
+              ? calculate_lpddr5_energy(counters, background_time)
+              : hbm3e_drampower.calculate(counters, background_time);
       status.drampower_act_energy += drampower_energy.act_nj;
       status.drampower_read_energy += drampower_energy.read_nj;
       status.drampower_write_energy += drampower_energy.write_nj;

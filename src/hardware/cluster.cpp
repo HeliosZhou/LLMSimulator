@@ -715,8 +715,14 @@ void Cluster::exportGantt(std::string gantt_file_path) {
 }
 void Cluster::setStat(Stat &stat) {
   time_ns time = get_device(0)->status.device_time;
-  stat.dram_energy_model =
-      config.use_drampower ? "fgdram+drampower_hbm3e_adapter" : "fgdram";
+  if (config.use_drampower) {
+    stat.dram_energy_model =
+        config.dram_power_model == "lpddr5"
+            ? "fgdram+drampower_lpddr5_params"
+            : "fgdram+drampower_hbm3e_adapter";
+  } else {
+    stat.dram_energy_model = "fgdram";
+  }
 
   stat.batchsize = scheduler->getBatchSize();
   stat.average_seq_len = scheduler->getAverageSeqlen();

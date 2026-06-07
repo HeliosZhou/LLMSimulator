@@ -41,6 +41,7 @@ class SystemConfig {
                  bool use_low_unit_moe_only = false,
                  bool use_ramulator = false,
                  bool use_drampower = false,
+                 std::string dram_power_model = "hbm3e_adapter",
                  bool exit_out_of_memory = true,
                  bool mem_cap_limit = false,               
                  bool use_flash_mla = true,
@@ -79,6 +80,7 @@ class SystemConfig {
         use_low_unit_moe_only(use_low_unit_moe_only),
         use_ramulator(use_ramulator),
         use_drampower(use_drampower),
+        dram_power_model(dram_power_model),
         exit_out_of_memory(exit_out_of_memory),
         mem_cap_limit(mem_cap_limit),
         use_flash_mla(use_flash_mla),
@@ -141,6 +143,7 @@ class SystemConfig {
   bool use_low_unit_moe_only = false;
   bool use_ramulator = false;
   bool use_drampower = false;
+  std::string dram_power_model = "hbm3e_adapter";
   
   bool exit_out_of_memory = false;
   bool mem_cap_limit = false;
@@ -192,6 +195,7 @@ static SystemConfig A100 = SystemConfig(
                  false,                             // use_low_unit_moe_only
                  false,                             // use_ramulator
                  false,                             // use_drampower
+                 "hbm3e_adapter",                   // dram_power_model
                  true,                              // exit_out_of_memory
                  false,                             // mem_cap_limit
                  true,                              // use_flash_mla
@@ -231,6 +235,7 @@ static SystemConfig H100 = SystemConfig(
                  false,                             // use_low_unit_moe_only 
                  false,                             // use_ramulator
                  false,                             // use_drampower
+                 "hbm3e_adapter",                   // dram_power_model
                  true,                              // exit_out_of_memory
                  false,                             // mem_cap_limit
                  true,                              // use_flash_mla
@@ -270,6 +275,7 @@ static SystemConfig B100 = SystemConfig(
                  false,                             // use_low_unit_moe_only
                   false,                             // use_ramulator
                   false,                             // use_drampower
+                  "hbm3e_adapter",                   // dram_power_model
                   true,                              // exit_out_of_memory
                   false,                             // mem_cap_limit
                   true,                              // use_flash_mla
@@ -309,6 +315,7 @@ static SystemConfig B200 = SystemConfig(
                  false,                             // use_low_unit_moe_only
                  false,                             // use_ramulator
                  false,                             // use_drampower
+                 "hbm3e_adapter",                   // dram_power_model
                  true,                              // exit_out_of_memory
                  false,                             // mem_cap_limit
                  true,                              // use_flash_mla
