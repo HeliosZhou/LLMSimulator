@@ -43,6 +43,9 @@ The latency, memory capacity, and command-count path still use the HBM3E system 
 
 - Raw CSV: `data/result_hbm3e_lpddr_b{B}_l{L}_reorder_{on|off}_ramul_on.csv`
 - Summary CSV: `data/summary_lpddr.csv`
-- Plots: `plots/lpddr5_*.png`
+- DRAM-only absolute heatmap: `plots/lpddr5_dram_only_command_energy_heatmaps.png`
+- DRAM-only relative heatmap: `plots/lpddr5_dram_only_command_share_heatmaps.png`
+- Total+MAC absolute heatmap: `plots/lpddr5_dram_command_energy_heatmaps.png`
+- Total+MAC relative heatmap: `plots/lpddr5_dram_command_share_heatmaps.png`
 - Per-run configs: `configs/result_hbm3e_lpddr_*.yaml`
 - Per-run logs: `logs/result_hbm3e_lpddr_*.log`

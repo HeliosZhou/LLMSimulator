@@ -43,7 +43,10 @@ python3 experiments/exp_mem_arch_lpddr/analyze_lpddr.py --all
 - `data/summary_lpddr.csv`: compact summary with latency, command counts, DRAMPower energy fields, and time fields.
 - `configs/result_hbm3e_lpddr_*.yaml`: per-run configs.
 - `logs/result_hbm3e_lpddr_*.log`: per-run stdout/stderr logs.
-- `plots/lpddr5_*.png`: generated plots.
+- `plots/lpddr5_dram_only_command_energy_heatmaps.png`: DRAM-only absolute energy heatmap for ACT/READ/WRITE/REF/BG.
+- `plots/lpddr5_dram_only_command_share_heatmaps.png`: DRAM-only relative energy heatmap for ACT/READ/WRITE/REF/BG.
+- `plots/lpddr5_dram_command_energy_heatmaps.png`: absolute energy heatmap for ACT/READ/WRITE/REF/BG plus MAC.
+- `plots/lpddr5_dram_command_share_heatmaps.png`: relative energy heatmap for ACT/READ/WRITE/REF/BG plus MAC.
 - `LPDDR5_DRAMPOWER_ANALYSIS.md`: generated markdown report.
 
 `analyze_lpddr.py` summarizes only `type=t2t` rows. The raw CSV also contains

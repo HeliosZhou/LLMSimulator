@@ -39,6 +39,16 @@ DRAMPOWER_ENERGY_FIELDS = [
     "drampower_background_energy",
     "drampower_total_energy",
 ]
+DRAM_COMPONENTS = [
+    ("ACT", "drampower_act_energy_nJ"),
+    ("READ", "drampower_read_energy_nJ"),
+    ("WRITE", "drampower_write_energy_nJ"),
+    ("REF", "drampower_ref_energy_nJ"),
+    ("BG", "drampower_background_energy_nJ"),
+]
+TOTAL_COMPONENTS = DRAM_COMPONENTS + [("MAC", "mac_energy_nJ")]
+PPT_DRAM_HEATMAP_SIZE = (9.15, 5.15)
+PPT_TOTAL_HEATMAP_SIZE = (10.7, 5.15)
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
@@ -215,7 +225,179 @@ def print_table(rows: list[dict[str, Any]]) -> None:
             print()
 
 
+def _format_energy_cell_value(value: float) -> str:
+    if value >= 100:
+        return f"{value:.0f}"
+    if value >= 10:
+        return f"{value:.1f}"
+    return f"{value:.2f}"
+
+
+def _component_energy_j(row: dict[str, Any], field: str) -> float:
+    return float(row.get(field, 0.0)) / 1e9
+
+
+def _component_share(row: dict[str, Any], field: str, denominator_fields: list[str]) -> float:
+    denominator = sum(float(row.get(denominator_field, 0.0)) for denominator_field in denominator_fields)
+    if denominator <= 0:
+        return 0.0
+    return float(row.get(field, 0.0)) / denominator * 100.0
+
+
+def plot_component_heatmaps(
+    rows: list[dict[str, Any]],
+    output: Path,
+    *,
+    components: list[tuple[str, str]],
+    title: str,
+    note: str,
+    figsize: tuple[float, float],
+    kind: str,
+) -> None:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.colors import LogNorm, Normalize
+
+    PLOT_DIR.mkdir(parents=True, exist_ok=True)
+    data = result_index(rows)
+
+    plt.rcParams.update(
+        {
+            "font.size": 8.0,
+            "axes.linewidth": 0.75,
+        }
+    )
+
+    fig, axes = plt.subplots(
+        2,
+        len(components),
+        figsize=figsize,
+        sharex=True,
+        sharey=True,
+        constrained_layout=False,
+    )
+    denominator_fields = [field for _, field in components]
+
+    for col_idx, (label, field) in enumerate(components):
+        if kind == "energy":
+            values_for_component = [_component_energy_j(row, field) for row in rows]
+            positive_values = [value for value in values_for_component if value > 0]
+            vmin = max(min(positive_values), 1e-3) if positive_values else 1e-3
+            vmax = max(positive_values) if positive_values else 1.0
+            if vmax <= vmin:
+                vmax = vmin * 1.01
+            norm = LogNorm(vmin=vmin, vmax=vmax)
+            cmap = "YlOrRd"
+        elif kind == "share":
+            norm = Normalize(vmin=0, vmax=100)
+            cmap = "YlGnBu"
+        else:
+            raise ValueError(f"Unknown heatmap kind: {kind}")
+
+        for row_idx, reorder in enumerate(REORDERING_MODES):
+            ax = axes[row_idx][col_idx]
+            if kind == "energy":
+                matrix = np.array(
+                    [
+                        [_component_energy_j(data[(reorder, seq_len, batch)], field) for seq_len in SEQ_LENGTHS]
+                        for batch in BATCH_PER_GPU
+                    ]
+                )
+            else:
+                matrix = np.array(
+                    [
+                        [
+                            _component_share(data[(reorder, seq_len, batch)], field, denominator_fields)
+                            for seq_len in SEQ_LENGTHS
+                        ]
+                        for batch in BATCH_PER_GPU
+                    ]
+                )
+            ax.imshow(matrix, cmap=cmap, norm=norm, aspect="auto")
+            for i, batch in enumerate(BATCH_PER_GPU):
+                for j, seq_len in enumerate(SEQ_LENGTHS):
+                    value = matrix[i, j]
+                    if kind == "energy":
+                        norm_value = norm(max(value, norm.vmin))
+                        cell_text = _format_energy_cell_value(value)
+                    else:
+                        norm_value = norm(value)
+                        cell_text = f"{value:.1f}%"
+                    text_color = "white" if norm_value > 0.58 else "#111111"
+                    ax.text(j, i, cell_text, ha="center", va="center", fontsize=6.7, color=text_color)
+
+            if row_idx == 0:
+                ax.set_title(label, fontsize=9.2)
+            if col_idx == 0:
+                ax.set_ylabel(f"reorder {reorder}\nB/GPU", fontsize=7.8)
+            ax.set_xticks(range(len(SEQ_LENGTHS)))
+            ax.set_xticklabels([str(seq) for seq in SEQ_LENGTHS], fontsize=6.9)
+            ax.set_yticks(range(len(BATCH_PER_GPU)))
+            ax.set_yticklabels([str(batch) for batch in BATCH_PER_GPU], fontsize=6.9)
+            ax.tick_params(length=0)
+            for spine in ax.spines.values():
+                spine.set_visible(False)
+            ax.set_xticks(np.arange(-0.5, len(SEQ_LENGTHS), 1), minor=True)
+            ax.set_yticks(np.arange(-0.5, len(BATCH_PER_GPU), 1), minor=True)
+            ax.grid(which="minor", color="white", linewidth=0.7)
+            ax.tick_params(which="minor", bottom=False, left=False)
+
+    for ax in axes[-1]:
+        ax.set_xlabel("Seq", fontsize=7.8)
+
+    fig.suptitle(title, fontsize=10.2, y=0.985)
+    fig.text(0.976, 0.965, note, ha="right", va="top", fontsize=7.2, color="#444444")
+    fig.subplots_adjust(left=0.058, right=0.992, top=0.875, bottom=0.105, hspace=0.24, wspace=0.065)
+    fig.savefig(output, dpi=220)
+    plt.close(fig)
+    print(f"Saved {output}")
+
+
 def generate_plots(rows: list[dict[str, Any]]) -> None:
+    PLOT_DIR.mkdir(parents=True, exist_ok=True)
+    plot_component_heatmaps(
+        rows,
+        PLOT_DIR / "lpddr5_dram_only_command_energy_heatmaps.png",
+        components=DRAM_COMPONENTS,
+        title="LPDDR5-param DRAM command energy (J/step)",
+        note="cell = J/step",
+        figsize=PPT_DRAM_HEATMAP_SIZE,
+        kind="energy",
+    )
+    plot_component_heatmaps(
+        rows,
+        PLOT_DIR / "lpddr5_dram_only_command_share_heatmaps.png",
+        components=DRAM_COMPONENTS,
+        title="LPDDR5-param DRAM command energy share",
+        note="cell = share of DRAM J/step",
+        figsize=PPT_DRAM_HEATMAP_SIZE,
+        kind="share",
+    )
+    plot_component_heatmaps(
+        rows,
+        PLOT_DIR / "lpddr5_dram_command_energy_heatmaps.png",
+        components=TOTAL_COMPONENTS,
+        title="LPDDR5-param component energy including MAC (J/step)",
+        note="cell = J/step",
+        figsize=PPT_TOTAL_HEATMAP_SIZE,
+        kind="energy",
+    )
+    plot_component_heatmaps(
+        rows,
+        PLOT_DIR / "lpddr5_dram_command_share_heatmaps.png",
+        components=TOTAL_COMPONENTS,
+        title="LPDDR5-param energy share including MAC",
+        note="cell = share of Total+MAC J/step",
+        figsize=PPT_TOTAL_HEATMAP_SIZE,
+        kind="share",
+    )
+
+
+def generate_legacy_plots(rows: list[dict[str, Any]]) -> None:
+    """Keep the previous plot shapes available for manual comparison."""
     import matplotlib
 
     matplotlib.use("Agg")
@@ -245,18 +427,12 @@ def generate_plots(rows: list[dict[str, Any]]) -> None:
     fig.tight_layout()
     out = PLOT_DIR / "lpddr5_drampower_energy_by_batch.png"
     fig.savefig(out, dpi=200, bbox_inches="tight")
+    plt.close(fig)
     print(f"Saved {out}")
 
     fig, axes = plt.subplots(2, 3, figsize=(11, 6.2), sharex=True, sharey=True)
-    components = [
-        ("drampower_act_energy_nJ", "ACT"),
-        ("drampower_read_energy_nJ", "READ"),
-        ("drampower_write_energy_nJ", "WRITE"),
-        ("drampower_ref_energy_nJ", "REF"),
-        ("drampower_background_energy_nJ", "BG"),
-        ("mac_energy_nJ", "MAC"),
-    ]
-    for ax, (field, label) in zip(axes.flat, components):
+    components = TOTAL_COMPONENTS
+    for ax, (label, field) in zip(axes.flat, components):
         matrix = np.array(
             [
                 [
@@ -284,6 +460,7 @@ def generate_plots(rows: list[dict[str, Any]]) -> None:
     fig.tight_layout()
     out = PLOT_DIR / "lpddr5_component_energy_heatmaps.png"
     fig.savefig(out, dpi=200, bbox_inches="tight")
+    plt.close(fig)
     print(f"Saved {out}")
 
 
@@ -330,7 +507,10 @@ def generate_report(rows: list[dict[str, Any]]) -> None:
             "",
             "- Raw CSV: `data/result_hbm3e_lpddr_b{B}_l{L}_reorder_{on|off}_ramul_on.csv`",
             "- Summary CSV: `data/summary_lpddr.csv`",
-            "- Plots: `plots/lpddr5_*.png`",
+            "- DRAM-only absolute heatmap: `plots/lpddr5_dram_only_command_energy_heatmaps.png`",
+            "- DRAM-only relative heatmap: `plots/lpddr5_dram_only_command_share_heatmaps.png`",
+            "- Total+MAC absolute heatmap: `plots/lpddr5_dram_command_energy_heatmaps.png`",
+            "- Total+MAC relative heatmap: `plots/lpddr5_dram_command_share_heatmaps.png`",
             "- Per-run configs: `configs/result_hbm3e_lpddr_*.yaml`",
             "- Per-run logs: `logs/result_hbm3e_lpddr_*.log`",
         ]
