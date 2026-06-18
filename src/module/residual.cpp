@@ -22,6 +22,14 @@ Tensor::Ptr Residual::forward(const Tensor::Ptr input,
 
   Tensor::Ptr output = get_activation("residual_out", input->shape);
 
+  LayerInfo info;
+  info.processor_type = device->config.processor_type;
+  std::vector<Tensor::Ptr> trace_tensors;
+  trace_tensors.push_back(input);
+  trace_tensors.push_back(output);
+  device->trace_tensor_accesses(LayerType::MAX, trace_tensors,
+                                sequences_metadata, info, "module");
+
   long size = input->getSize();
   if (size == 0) {
     return output;

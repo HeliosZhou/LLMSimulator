@@ -26,6 +26,15 @@ Tensor::Ptr LayerNorm::forward(const Tensor::Ptr input,
 
   assertTrue(k == layer_norm_weight->shape[0], "input shape doesn't match with layer norm weight (= hidden dim)");
 
+  LayerInfo info;
+  info.processor_type = device->config.processor_type;
+  std::vector<Tensor::Ptr> trace_tensors;
+  trace_tensors.push_back(input);
+  trace_tensors.push_back(layer_norm_weight);
+  trace_tensors.push_back(output);
+  device->trace_tensor_accesses(LayerType::MAX, trace_tensors,
+                                sequences_metadata, info, "module");
+
   long size = input->getSize();
   if (size == 0) {
     return output;

@@ -47,7 +47,12 @@ void Tensor::setMemoryObject() {
 
 void Tensor::set_device(Device::Ptr _device) { device = _device; }
 
-std::string Tensor::get_module_map_name() { return module->module_map_name; }
+std::string Tensor::get_module_map_name() {
+  if (module == nullptr) {
+    return "";
+  }
+  return module->module_map_name;
+}
 
 std::string Tensor::ToString() {
   return "(" + name + ": " + std::to_string(shape.size()) + ", " + tag + ")";

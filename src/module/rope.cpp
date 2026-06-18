@@ -33,6 +33,15 @@ Tensor::Ptr RoPE::forward(const Tensor::Ptr input,
   Tensor::Ptr precomputed_cos_sin = get_activation("sin_cos", sin_cos_shape);
   Tensor::Ptr output = get_activation("rope_out", input->shape);
 
+  LayerInfo info;
+  info.processor_type = device->config.processor_type;
+  std::vector<Tensor::Ptr> trace_tensors;
+  trace_tensors.push_back(input);
+  trace_tensors.push_back(precomputed_cos_sin);
+  trace_tensors.push_back(output);
+  device->trace_tensor_accesses(LayerType::MAX, trace_tensors,
+                                sequences_metadata, info, "module");
+
   long size = input->getSize();
   if (size == 0) {
     return output;
@@ -91,6 +100,17 @@ TensorVec BatchedRoPE::forward(const TensorVec input,
 
   Tensor::Ptr precomputed_cos_sin = get_activation("sin_cos", sin_cos_shape);
   Tensor::Ptr output = get_activation("rope_out", input[0]->shape);
+
+  LayerInfo info;
+  info.processor_type = device->config.processor_type;
+  std::vector<Tensor::Ptr> trace_tensors;
+  for (const Tensor::Ptr& tensor : input) {
+    trace_tensors.push_back(tensor);
+  }
+  trace_tensors.push_back(precomputed_cos_sin);
+  trace_tensors.push_back(output);
+  device->trace_tensor_accesses(LayerType::MAX, trace_tensors,
+                                sequences_metadata, info, "module");
 
   long size = input[0]->getSize();
   if (size == 0) {

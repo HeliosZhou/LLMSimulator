@@ -502,6 +502,8 @@ Tensor::Ptr AbsorbMLAGen::forward(const Tensor::Ptr input,
   for (int seq_idx = 0; seq_idx < batch_size; seq_idx++) {
     Tensor::Ptr latent_kv_cache = get_cache("latent_kv_cache", seq_idx, 0, true);
     Tensor::Ptr latent_pe_cache = get_cache("latent_pe_cache", seq_idx, 0, true);
+    tensor_list.push_back(latent_kv_cache);
+    tensor_list.push_back(latent_pe_cache);
   }
 
   device->execution(LayerType::ABSORBED_MLA_GEN, tensor_list, sequences_metadata, layer_info);
@@ -524,6 +526,20 @@ AbsorbMLASum::AbsorbMLASum(std::string& prefix, std::string& name,
   int parallel_num = device_list.size();
 
   std::vector<int> shape = {num_kv_heads / parallel_num, max_seq_len, kv_lora_rank};
+  std::vector<int> latent_kv_shape = {max_seq_len, kv_lora_rank};
+  std::vector<int> latent_pe_shape = {max_seq_len, qk_rope_head_dim};
+
+  for (int seq_idx = 0; seq_idx < batch_size; seq_idx++) {
+    Tensor::Ptr latent_kv_cache = Tensor::Create(
+      "latent_kv_cache_" + std::to_string(seq_idx),
+      latent_kv_shape, "cache", device, device->model_config.precision_byte);
+    add_tensor(latent_kv_cache);
+
+    Tensor::Ptr latent_pe_cache = Tensor::Create(
+      "latent_pe_cache_" + std::to_string(seq_idx),
+      latent_pe_shape, "cache", device, device->model_config.precision_byte);
+    add_tensor(latent_pe_cache);
+  }
 
   Tensor::Ptr output = Tensor::Create("attn_output", shape, "act", device, device->model_config.precision_byte);
   add_tensor(output);
@@ -557,6 +573,13 @@ Tensor::Ptr AbsorbMLASum::forward(const Tensor::Ptr input,
   tensor_list.push_back(input);
 
   tensor_list.push_back(output_tensor);
+  int batch_size = sequences_metadata->get_sum().size();
+  for (int seq_idx = 0; seq_idx < batch_size; seq_idx++) {
+    Tensor::Ptr latent_kv_cache = get_cache("latent_kv_cache", seq_idx, 0, true);
+    Tensor::Ptr latent_pe_cache = get_cache("latent_pe_cache", seq_idx, 0, true);
+    tensor_list.push_back(latent_kv_cache);
+    tensor_list.push_back(latent_pe_cache);
+  }
 
   device->execution(LayerType::ABSORBED_MLA_SUM, tensor_list, sequences_metadata,
   layer_info);
