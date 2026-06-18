@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <memory>
 
 #include "drampower/hbm3e_adapter.h"
 
@@ -404,10 +405,23 @@ void TopModuleGraph::set_pop_status() {
     if (device->config.use_drampower) {
       static const Ramulator::DRAMPower::HBM3EAdapter hbm3e_drampower;
       const auto counters = to_drampower_counters(exec_status);
-      const auto drampower_energy =
-          device->config.dram_power_model == "lpddr5"
-              ? calculate_lpddr5_energy(counters, background_time)
-              : hbm3e_drampower.calculate(counters, background_time);
+      Ramulator::DRAMPower::EnergyBreakdown drampower_energy;
+      if (device->config.dram_power_model == "lpddr5") {
+        drampower_energy = calculate_lpddr5_energy(counters, background_time);
+      } else if (device->config.dram_power_model == "dramspec_hbm3e_like") {
+        static std::unique_ptr<Ramulator::DRAMPower::HBM3EAdapter>
+            dramspec_drampower;
+        if (!dramspec_drampower) {
+          dramspec_drampower =
+              std::make_unique<Ramulator::DRAMPower::HBM3EAdapter>(
+                  Ramulator::DRAMPower::HBM3EAdapter::FromYaml(
+                      device->config.dram_power_config_path));
+        }
+        drampower_energy =
+            dramspec_drampower->calculate(counters, background_time);
+      } else {
+        drampower_energy = hbm3e_drampower.calculate(counters, background_time);
+      }
       status.drampower_act_energy += drampower_energy.act_nj;
       status.drampower_read_energy += drampower_energy.read_nj;
       status.drampower_write_energy += drampower_energy.write_nj;

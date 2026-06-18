@@ -716,10 +716,13 @@ void Cluster::exportGantt(std::string gantt_file_path) {
 void Cluster::setStat(Stat &stat) {
   time_ns time = get_device(0)->status.device_time;
   if (config.use_drampower) {
-    stat.dram_energy_model =
-        config.dram_power_model == "lpddr5"
-            ? "fgdram+drampower_lpddr5_params"
-            : "fgdram+drampower_hbm3e_adapter";
+    if (config.dram_power_model == "lpddr5") {
+      stat.dram_energy_model = "fgdram+drampower_lpddr5_params";
+    } else if (config.dram_power_model == "dramspec_hbm3e_like") {
+      stat.dram_energy_model = "fgdram+drampower_dramspec_hbm3e_like";
+    } else {
+      stat.dram_energy_model = "fgdram+drampower_hbm3e_adapter";
+    }
   } else {
     stat.dram_energy_model = "fgdram";
   }
