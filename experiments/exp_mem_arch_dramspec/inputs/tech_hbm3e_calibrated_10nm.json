@@ -1,0 +1,63 @@
+{
+    "TechnologyNode[nm]": 10,
+
+    "Vpp[V]": 1.8,
+    "Vdd[V]": 1.1,
+
+    "WireResistance[Ohm/mm]": 40,
+    "WireCapacitance[fF/mm]": 100,
+
+    "CellCapacitance[fF]": 15,
+    "CellResistance[KOhm]": 15,
+    "CellWidth[um]": 0.060,
+    "CellHeight[um]": 0.032,
+
+    "BitlineCapacitancePerCell[aF]": 38,
+    "BitlineResistancePerCell[Ohm]": 25,
+
+    "WordlineCapacitancePerCell[aF]": 46,
+    "WordlineResistancePerCell[Ohm]": 18,
+
+    "PrimarySenseAmpHeight[um]": 7,
+
+    "LocalWordlineDriverWitdh[um]": 3.5,
+    "LocalWordlineDriverResistance[Ohm]": 250,
+
+    "SecondarySenseAmpCurrent[uA]": 150,
+    "GlobalWordlineDriverResistance[Ohm]": 100,
+
+    "RowDecoderWidth[um]": 40,
+    "WriteDriverResistance[Ohm]": 150,
+
+    "ColumnDecoderHeight[um]": 180,
+    "CSLDriverResistance[Ohm]": 100,
+    "CSLLoadCapacitance[fF]": 5,
+    "GlobalDataLineDriverResistance[Ohm]": 150,
+
+    "DQDriverHeight[um]": 150,
+    "DQtoTSVWireLength[um]": 150,
+    "DQDriverResistance[Ohm]": 120,
+
+    "IDD2NFreqSlope[mA/MHz]": 0.008,
+    "IDD2NTempAlpha[mA]": 0.45,
+    "IDD2NTempBeta[C^-1]": 0.04467,
+    "IDD2NRefTemp[C]": 25,
+    "IDD2NOffset[mA]": 4.5,
+    "OCDCurrentSlope[uA/MHz]": 2.0,
+
+    "FullySharedResourcesCurrent[mA]": 1.5,
+    "SemiSharedResourcesCurrent[mA]": 0.3,
+    "nBanksPerSemiSharedResource[]": 2,
+
+    "TSVHeight[um]": 650,
+
+    "AdditionalTRLLatency[cc]": 0,
+
+    "DriverEnableDelay[ns]": 0.4,
+    "InOutSSADelay[ns]": 1.2,
+    "CommandDecoderDelay[ns]": 1.5,
+    "IODelay[ns]": 0.6,
+    "SSAPrechargeDelay[ns]": 0.7,
+    "tWRMargin[ns]": 0.8,
+    "EqualizerDelay[ns]": 0.7
+}

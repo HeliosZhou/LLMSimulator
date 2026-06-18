@@ -207,6 +207,16 @@ def main() -> None:
         help="Output path for annotated DRAM-only relative command share heatmaps",
     )
     parser.add_argument(
+        "--dram-title",
+        default="DRAM command energy (J/step)",
+        help="Title for the DRAM-only absolute energy heatmap",
+    )
+    parser.add_argument(
+        "--dram-share-title",
+        default="DRAM command energy share",
+        help="Title for the DRAM-only relative energy share heatmap",
+    )
+    parser.add_argument(
         "--heatmap-output",
         type=Path,
         default=PLOT_DIR / "figure_dram_command_energy_heatmaps.png",
@@ -218,6 +228,16 @@ def main() -> None:
         default=PLOT_DIR / "figure_dram_command_share_heatmaps.png",
         help="Output path for annotated relative component share heatmaps including MAC",
     )
+    parser.add_argument(
+        "--total-title",
+        default="Component energy including MAC (J/step)",
+        help="Title for the absolute energy heatmap including MAC",
+    )
+    parser.add_argument(
+        "--total-share-title",
+        default="Energy share including MAC",
+        help="Title for the relative energy share heatmap including MAC",
+    )
     args = parser.parse_args()
 
     energy_rows = read_energy_csv(args.energy_csv)
@@ -228,7 +248,7 @@ def main() -> None:
         args.dram_heatmap_output,
         component_labels=DRAM_COMPONENT_LABELS,
         value_keys=DRAM_ENERGY_KEYS,
-        title="DRAM command energy (J/step)",
+        title=args.dram_title,
         note="cell = J/step",
         figsize=PPT_DRAM_HEATMAP_SIZE,
         kind="energy",
@@ -238,7 +258,7 @@ def main() -> None:
         args.dram_share_heatmap_output,
         component_labels=DRAM_COMPONENT_LABELS,
         value_keys=DRAM_SHARE_KEYS,
-        title="DRAM command energy share",
+        title=args.dram_share_title,
         note="cell = share of DRAM J/step",
         figsize=PPT_DRAM_HEATMAP_SIZE,
         kind="share",
@@ -248,7 +268,7 @@ def main() -> None:
         args.heatmap_output,
         component_labels=TOTAL_COMPONENT_LABELS,
         value_keys=TOTAL_ENERGY_KEYS,
-        title="Component energy including MAC (J/step)",
+        title=args.total_title,
         note="cell = J/step",
         figsize=PPT_TOTAL_HEATMAP_SIZE,
         kind="energy",
@@ -258,7 +278,7 @@ def main() -> None:
         args.share_heatmap_output,
         component_labels=TOTAL_COMPONENT_LABELS,
         value_keys=TOTAL_SHARE_KEYS,
-        title="Energy share including MAC",
+        title=args.total_share_title,
         note="cell = share of Total+MAC J/step",
         figsize=PPT_TOTAL_HEATMAP_SIZE,
         kind="share",

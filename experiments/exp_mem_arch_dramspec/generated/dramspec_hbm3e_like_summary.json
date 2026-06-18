@@ -1,0 +1,46 @@
+{
+  "timing_cycles_from_dramspec": {
+    "Frequency": 2000.0,
+    "trcd_cc": 8.0,
+    "tcl_cc": 17.0,
+    "tras_cc": 23.0,
+    "trp_cc": 7.0,
+    "trc_cc": 30.0,
+    "trl_cc": 17.0,
+    "twl_cc": 16.0,
+    "trtp_cc": 11.0,
+    "tccd_cc": 5.0,
+    "twr_cc": 8.0,
+    "trfc_cc": 402.0,
+    "trefI_cc": 7800.0
+  },
+  "timing_ns_from_dramspec": {
+    "trcd": 3.7523693615843863,
+    "tcl": 8.441250277390179,
+    "tras": 11.150070070570175,
+    "trp": 3.403217970569407,
+    "trc": 14.55328804113958,
+    "trl": 8.441250277390179,
+    "trtp": 5.029177413913239,
+    "tccd": 2.3685232950725505,
+    "twr": 3.988071549729214,
+    "trfc": 200.79237349827036,
+    "trefI": 3900.0
+  },
+  "current_mA_from_dramspec": {
+    "IDD0": 41.22196471178819,
+    "IPP0": 0.0,
+    "IDD1": 106.92223880486677,
+    "IPP1": 0.0,
+    "IDD4R": 537.526510863211,
+    "IDD4W": 537.526510863211,
+    "IDD2n": 20.542053565121517,
+    "IDD3n": 26.042053565121517,
+    "IPP3n": 0.0,
+    "Rho": 0.2727272727272727,
+    "IDD5B": 243.54525805467378,
+    "IPP5B": 0.0
+  },
+  "generated_ramulator_config": "generated/dram_config_HBM3E_DRAMSpec.yaml",
+  "generated_power_config": "generated/dramspec_hbm3e_like_power.yaml"
+}
