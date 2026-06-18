@@ -15,9 +15,14 @@ MemorySystem:
   DRAM:
     impl: HBM4
     org:
-      preset: HBM4_Iso_16Gb_4R
+      density: 32768
+      dq: 32
       channel: 1
+      pseudochannel: 64
       rank: 4
+      bank: 16
+      row: 1024
+      column: 32
     timing:
       preset: HBM4_8Gbps
 
