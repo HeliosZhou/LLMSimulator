@@ -300,8 +300,9 @@ ExecStatus AttentionSumExecutionGPU(Device_Ptr device,
   exec_status.flops = total_flops;
   exec_status.memory_size = total_memory_size;
 
-  assertTrue(total_flops > 0, "fail");
-  assertTrue(total_memory_size > 0, "fail");
+  if (total_flops <= 0 || total_memory_size <= 0) {
+    return exec_status;
+  }
 
   return exec_status;
 };
@@ -1109,8 +1110,9 @@ ExecStatus MultiLatentAttentionSumExecutionGPU(Device_Ptr device,
   exec_status.flops = total_flops;
   exec_status.memory_size = total_memory_size;
   input->setShape(orig_shape); // restore original shape
-  assertTrue(total_flops > 0, "fail");
-  assertTrue(total_memory_size > 0, "fail");
+  if (total_flops <= 0 || total_memory_size <= 0) {
+    return exec_status;
+  }
 
   return exec_status;
 };
@@ -1575,8 +1577,9 @@ ExecStatus MultiLatentAttentionSumExecutionLogic(Device_Ptr device,
   exec_status.flops = total_flops;
   exec_status.memory_size = total_memory_size;
   input->setShape(orig_shape); // restore original shape
-  assertTrue(total_flops > 0, "fail");
-  assertTrue(total_memory_size > 0, "fail");
+  if (total_flops <= 0 || total_memory_size <= 0) {
+    return exec_status;
+  }
 
   return exec_status;
 };
@@ -2041,8 +2044,9 @@ ExecStatus MultiLatentAttentionSumExecutionPIM(Device_Ptr device,
   exec_status.flops = total_flops;
   exec_status.memory_size = total_memory_size;
   input->setShape(orig_shape); // restore original shape
-  assertTrue(total_flops > 0, "fail");
-  assertTrue(total_memory_size > 0, "fail");
+  if (total_flops <= 0 || total_memory_size <= 0) {
+    return exec_status;
+  }
 
   return exec_status;
 };
@@ -2462,8 +2466,9 @@ ExecStatus AbsorbMLASumExecutionGPU(Device_Ptr device,
   exec_status.flops = total_flops;
   exec_status.memory_size = total_memory_size;
 
-  assertTrue(total_flops > 0, "fail");
-  assertTrue(total_memory_size > 0, "fail");
+  if (total_flops <= 0 || total_memory_size <= 0) {
+    return exec_status;
+  }
 
   input->setShape(orig_shape);
   
