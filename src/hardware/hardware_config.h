@@ -42,6 +42,9 @@ class SystemConfig {
                  bool use_ramulator = false,
                  bool use_drampower = false,
                  std::string dram_power_model = "hbm3e_adapter",
+                 std::string dram_power_config_path = "",
+                 std::string dram_config_path = "",
+                 double memory_scale_factor_override = 0.0,
                  bool exit_out_of_memory = true,
                  bool mem_cap_limit = false,               
                  bool use_flash_mla = true,
@@ -81,6 +84,9 @@ class SystemConfig {
         use_ramulator(use_ramulator),
         use_drampower(use_drampower),
         dram_power_model(dram_power_model),
+        dram_power_config_path(dram_power_config_path),
+        dram_config_path(dram_config_path),
+        memory_scale_factor_override(memory_scale_factor_override),
         exit_out_of_memory(exit_out_of_memory),
         mem_cap_limit(mem_cap_limit),
         use_flash_mla(use_flash_mla),
@@ -144,6 +150,9 @@ class SystemConfig {
   bool use_ramulator = false;
   bool use_drampower = false;
   std::string dram_power_model = "hbm3e_adapter";
+  std::string dram_power_config_path = "";
+  std::string dram_config_path = "";
+  double memory_scale_factor_override = 0.0;
   
   bool exit_out_of_memory = false;
   bool mem_cap_limit = false;
@@ -196,6 +205,9 @@ static SystemConfig A100 = SystemConfig(
                  false,                             // use_ramulator
                  false,                             // use_drampower
                  "hbm3e_adapter",                   // dram_power_model
+                 "",                                // dram_power_config_path
+                 "",                                // dram_config_path
+                 0.0,                               // memory_scale_factor_override
                  true,                              // exit_out_of_memory
                  false,                             // mem_cap_limit
                  true,                              // use_flash_mla
@@ -236,6 +248,9 @@ static SystemConfig H100 = SystemConfig(
                  false,                             // use_ramulator
                  false,                             // use_drampower
                  "hbm3e_adapter",                   // dram_power_model
+                 "",                                // dram_power_config_path
+                 "",                                // dram_config_path
+                 0.0,                               // memory_scale_factor_override
                  true,                              // exit_out_of_memory
                  false,                             // mem_cap_limit
                  true,                              // use_flash_mla
@@ -276,6 +291,9 @@ static SystemConfig B100 = SystemConfig(
                   false,                             // use_ramulator
                   false,                             // use_drampower
                   "hbm3e_adapter",                   // dram_power_model
+                  "",                                // dram_power_config_path
+                  "",                                // dram_config_path
+                  0.0,                               // memory_scale_factor_override
                   true,                              // exit_out_of_memory
                   false,                             // mem_cap_limit
                   true,                              // use_flash_mla
@@ -316,6 +334,9 @@ static SystemConfig B200 = SystemConfig(
                  false,                             // use_ramulator
                  false,                             // use_drampower
                  "hbm3e_adapter",                   // dram_power_model
+                 "",                                // dram_power_config_path
+                 "",                                // dram_config_path
+                 0.0,                               // memory_scale_factor_override
                  true,                              // exit_out_of_memory
                  false,                             // mem_cap_limit
                  true,                              // use_flash_mla

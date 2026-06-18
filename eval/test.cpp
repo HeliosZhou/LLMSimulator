@@ -112,6 +112,14 @@ int main(int argc, char *argv[]) {
     system_config.ramulator_sample_stride =
         std::max(1, config["system"]["ramulator_sample_stride"].as<int>());
   }
+  if (config["system"]["dram_config_path"]) {
+    system_config.dram_config_path =
+        config["system"]["dram_config_path"].as<std::string>();
+  }
+  if (config["system"]["memory_scale_factor"]) {
+    system_config.memory_scale_factor_override =
+        config["system"]["memory_scale_factor"].as<double>();
+  }
 
   if (config["system"]["logic_x"]) {
     system_config.logic_x = config["system"]["logic_x"].as<int>();
@@ -152,6 +160,10 @@ int main(int argc, char *argv[]) {
   if (config["system"]["optimization"]["dram_power_model"]) {
     system_config.dram_power_model =
         config["system"]["optimization"]["dram_power_model"].as<std::string>();
+  }
+  if (config["system"]["optimization"]["dram_power_config_path"]) {
+    system_config.dram_power_config_path =
+        config["system"]["optimization"]["dram_power_config_path"].as<std::string>();
   }
 
   system_config.use_flash_mla =
