@@ -1,6 +1,8 @@
 #pragma once
+#include <fstream>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "common/type.h"
 #include "dram/dram_type.h"
@@ -73,6 +75,11 @@ class Device : public std::enable_shared_from_this<Device> {
                  const std::vector<Tensor_Ptr>& tensor_list,
                  const BatchedSequence::Ptr sequences_metadata,
                  const LayerInfo layer_info);
+  void trace_tensor_accesses(LayerType layer_type,
+                             const std::vector<Tensor_Ptr>& tensor_list,
+                             const BatchedSequence::Ptr sequences_metadata,
+                             const LayerInfo layer_info,
+                             const std::string& source);
 
   // allocate DataObject;
   void setMemoryObject(Tensor_Ptr tensor);
@@ -114,8 +121,15 @@ class Device : public std::enable_shared_from_this<Device> {
   ExecStatus exec_status;
 
   bool use_ramulator;
+  bool trace_enabled;
+  std::string trace_path;
+  std::ofstream trace_stream;
+  long trace_event_id;
 
   Device(SystemConfig config, int device_total_rank, Cluster_ptr cluster);
+
+  void initialize_trace();
+  void write_trace_header();
 
   void execution_ramulator(LayerType layer_type,
                            std::vector<Tensor_Ptr> tensor_list);
