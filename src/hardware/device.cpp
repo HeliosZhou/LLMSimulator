@@ -132,8 +132,10 @@ Device::Device(SystemConfig config, int device_total_rank, Cluster_ptr cluster)
   }
   else if(config.gpu_gen == "B100" || config.gpu_gen == "B200"){
     // Select DRAM config based on memory bandwidth
-    // HBM3E: 8 TB/s, GDDR6: 512 GB/s, DDR5: 64 GB/s
-    if(config.memory_bandwidth >= 4.0e12) {  // >= 4 TB/s -> HBM3E
+    // HBM3E: 8 TB/s, HBM4: 16 TB/s, GDDR6: 512 GB/s, DDR5: 64 GB/s
+    if(config.memory_bandwidth >= 8.0e12) {  // >= 8 TB/s -> HBM4
+      dram_cfg_path = "./dram_config_HBM4_baseline.yaml";
+    } else if(config.memory_bandwidth >= 4.0e12) {  // >= 4 TB/s -> HBM3E
       dram_cfg_path = "./dram_config_HBM3E_192GB.yaml";
     } else if(config.memory_bandwidth >= 256.0e9) {  // >= 256 GB/s -> GDDR6
       dram_cfg_path = "./dram_config_GDDR6.yaml";
@@ -154,7 +156,12 @@ Device::Device(SystemConfig config, int device_total_rank, Cluster_ptr cluster)
   }
   else if((config.gpu_gen == "B100") || (config.gpu_gen == "B200")){
     // Select memory config based on bandwidth
-    if(config.memory_bandwidth >= 4.0e12) {  // HBM3E
+    if(config.memory_bandwidth >= 8.0e12) {  // HBM4: 16 TB/s system
+      memory_scale_factor = 0.5; // 8.0Gbps pin rate, tCK = 250ps, 1 / 4GHz = 0.25ns; scale = 0.5
+      memory_config = hbm4_baseline;
+      memory_config.num_cube = config.num_cube;
+      memory_config.num_logic_cube = config.num_logic_cube;
+    } else if(config.memory_bandwidth >= 4.0e12) {  // HBM3E
       memory_scale_factor = 0.5; // 8.0Gbps pin rate's ideal bandwidth = 8000, tCK = 2000, 1 / 2GHz = 0.5
       memory_config = hbm3e_192GB;
       memory_config.num_cube = config.num_cube;

@@ -1,0 +1,36 @@
+# HBM4 Baseline Configuration
+# Based on: Folded Banks (ISCA 2025) Table 1 / RoMe (arXiv:2512.01541) Table V
+# This is a projected/glide-path baseline, NOT a JEDEC final spec.
+# Label: FoldedBanks_Iso_HBM4_projected
+
+Frontend:
+  impl: PIMController
+  clock_ratio: 1
+  path: example_inst.trace
+
+MemorySystem:
+  impl: PIMDRAMSystem
+  clock_ratio: 1
+
+  DRAM:
+    impl: HBM4
+    org:
+      preset: HBM4_Iso_16Gb_4R
+      channel: 1
+      rank: 4
+    timing:
+      preset: HBM4_8Gbps
+
+  Controller:
+    impl: PIM_DRAM_controller
+    Scheduler:
+      impl: PIM_Scheduler
+    RefreshManager:
+      impl: AllBank
+    plugins:
+    - ControllerPlugin:
+        impl: TraceRecorder
+        path: log/cmd_hbm4_baseline.log
+
+  AddrMapper:
+    impl: RoBaRaCoCh

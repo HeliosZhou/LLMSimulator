@@ -85,4 +85,21 @@ class MemoryConfig {
     5         // Ramulator levels: channel, bankgroup, bank, row, column
   );
 
+  // HBM4 baseline configuration (Folded Banks / RoMe projected)
+  // 64 pseudo channels, 16 banks/channel, 1KB row, 32B access granularity
+  // Per cube: 64 channels × 16 banks × 1024 rows × 32 cols × 32B × 8 prefetch = 1Gb density
+  // 8 cubes × 32GB = 256GB total, 8 cubes × 2TB/s = 16TB/s total bandwidth
+  static MemoryConfig hbm4_baseline = MemoryConfig(
+    8,      // num_cube (8 cubes for 256GB system)
+    8,      // num_logic_cube
+    64,     // num_channel (64 pseudo channels per cube)
+    4,      // num_rank (4 ranks for 16-Hi stack)
+    1,      // num_bankgroup (HBM4: no bankgroup level, set to 1)
+    16,     // num_bank (16 banks per channel)
+    1024,   // num_row (1KB row = 1024 rows)
+    32,     // num_col
+    32,     // granul = 32B access granularity
+    6       // Ramulator levels: channel, pseudochannel, rank, bank, row, column
+  );
+
 }  // namespace llm_system
