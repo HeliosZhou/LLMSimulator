@@ -32,7 +32,10 @@ DRAMInterface::DRAMInterface(std::string config_path,
   StringMapInit();
 }
 
-void DRAMInterface::resetCounter() { exec_status = ExecStatus(); }
+void DRAMInterface::resetCounter() {
+  exec_status = ExecStatus();
+  per_channel_delta_.clear();
+}
 
 // Get requests and returns end time of each DRAM requests
 void DRAMInterface::HandleRequest(const std::list<DRAMRequest::Ptr>& requests,
@@ -87,6 +90,20 @@ void DRAMInterface::updateStatus(const PIMRequest& pimrequest) {
   exec_status.all_write_count +=
       scale_counter(get_delta(DRAMCommandType::kALL_WRITE));
   exec_status.ref_count += scale_counter(get_delta(DRAMCommandType::kREF));
+
+  // Per-channel command delta
+  const auto per_channel_cmd = memory_system->get_per_channel_dram_cmd();
+  per_channel_delta_.resize(per_channel_cmd.size());
+  for (std::size_t ch = 0; ch < per_channel_cmd.size(); ch++) {
+    per_channel_delta_[ch].resize(per_channel_cmd[ch].size(), 0);
+    for (std::size_t i = 0; i < per_channel_cmd[ch].size(); i++) {
+      const std::int64_t prev =
+          (ch < last_per_channel_cmd_.size() && i < last_per_channel_cmd_[ch].size())
+              ? last_per_channel_cmd_[ch][i] : 0;
+      per_channel_delta_[ch][i] = std::max<std::int64_t>(0, per_channel_cmd[ch][i] - prev);
+    }
+  }
+  last_per_channel_cmd_ = per_channel_cmd;
 
   // For LPDDR5, order should be below
   /*

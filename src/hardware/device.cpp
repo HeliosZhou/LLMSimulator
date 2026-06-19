@@ -325,6 +325,19 @@ void Device::execution(LayerType layer_type,
     cluster->executor.execution(layer_type, tensor_list, sequences_metadata,
                                 config.processor_type, layer_info,
                                 use_ramulator, get_ptr());
+
+    // Accumulate per-layer-type DRAM stats from DRAMInterface
+    // (DRAMInterface::exec_status is separate from Device::exec_status)
+    const auto& dram_es = dram_interface->getExecStatus();
+    auto& stats = per_layer_type_dram_stats_[layer_type];
+    stats.act_count += dram_es.act_count;
+    stats.read_count += dram_es.read_count;
+    stats.write_count += dram_es.write_count;
+    stats.all_act_count += dram_es.all_act_count;
+    stats.all_read_count += dram_es.all_read_count;
+    stats.all_write_count += dram_es.all_write_count;
+    stats.ref_count += dram_es.ref_count;
+    stats.memory_duration += dram_es.memory_duration;
   }
 }
 

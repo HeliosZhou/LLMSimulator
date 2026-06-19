@@ -59,6 +59,22 @@ class Device : public std::enable_shared_from_this<Device> {
     model_config = _model_config;
   }
 
+  // Per-layer-type DRAM command statistics
+  struct LayerTypeDramStats {
+    counter_t act_count = 0;
+    counter_t read_count = 0;
+    counter_t write_count = 0;
+    counter_t all_act_count = 0;
+    counter_t all_read_count = 0;
+    counter_t all_write_count = 0;
+    counter_t ref_count = 0;
+    time_ns memory_duration = 0;
+  };
+
+  const std::map<LayerType, LayerTypeDramStats>& getPerLayerTypeDramStats() const {
+    return per_layer_type_dram_stats_;
+  }
+
   time_ns get_time() { return status.device_time; }
   void set_time(time_ns time) { status.device_time = time; }
 
@@ -121,6 +137,7 @@ class Device : public std::enable_shared_from_this<Device> {
   ExecStatus exec_status;
 
   bool use_ramulator;
+  std::map<LayerType, LayerTypeDramStats> per_layer_type_dram_stats_;
   bool trace_enabled;
   std::string trace_path;
   std::ofstream trace_stream;
