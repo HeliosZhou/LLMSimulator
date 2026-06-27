@@ -8,7 +8,7 @@ Reproduces the **HBM4 baseline** side of RoMe Figure 12 using LLMSimulator.
 - **Accelerators**: 8 × B200-class (560 TFLOPS BF16, 256 GB, 16 TB/s)
 - **Models**: DeepSeek-V3 (MLA+MoE), Grok 1 (GQA+MoE), Llama 3-405B (GQA+dense)
 - **Stage**: Decode only, sequence length = 8K
-- **Batch sizes**: 1, 2, 4, 8, 16, 32, 64, 128, 256 (constrained by memory capacity)
+- **Batch sizes**: 8, 16, 32, 64, 128, 256, 512, 1024 (constrained by memory capacity)
 
 ## Parallel strategies (same as RoMe)
 

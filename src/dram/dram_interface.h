@@ -44,6 +44,10 @@ class DRAMInterface {
   const std::vector<std::vector<std::int64_t>> &getPerChannelDelta() const {
     return per_channel_delta_;
   }
+  const std::vector<std::vector<std::int64_t>> &getPerChannelAccumulated() const {
+    return per_channel_acc_;
+  }
+  void resetPerChannelAccumulated() { per_channel_acc_.clear(); }
   PIMRequest &GeneratePIMCommand(const DRAMRequest::Ptr request,
                                  PIMRequest &pimrequest) const;
   void resetCounter();
@@ -70,7 +74,8 @@ class DRAMInterface {
   ExecStatus exec_status;
   std::vector<std::int64_t> last_issued_dram_cmd_;
   std::vector<std::vector<std::int64_t>> last_per_channel_cmd_;
-  std::vector<std::vector<std::int64_t>> per_channel_delta_;
+  std::vector<std::vector<std::int64_t>> per_channel_delta_;       // delta from last HandleRequest
+  std::vector<std::vector<std::int64_t>> per_channel_acc_;        // accumulated across HandleRequest calls
 
   long frontend_tick;
   long mem_tick;

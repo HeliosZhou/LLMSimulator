@@ -364,6 +364,30 @@ impl/HBM3.cpp.s:
 	cd /home/zsy/LLMSimulator/build && $(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM3.cpp.s
 .PHONY : impl/HBM3.cpp.s
 
+impl/HBM4.o: impl/HBM4.cpp.o
+.PHONY : impl/HBM4.o
+
+# target to build an object file
+impl/HBM4.cpp.o:
+	cd /home/zsy/LLMSimulator/build && $(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o
+.PHONY : impl/HBM4.cpp.o
+
+impl/HBM4.i: impl/HBM4.cpp.i
+.PHONY : impl/HBM4.i
+
+# target to preprocess a source file
+impl/HBM4.cpp.i:
+	cd /home/zsy/LLMSimulator/build && $(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.i
+.PHONY : impl/HBM4.cpp.i
+
+impl/HBM4.s: impl/HBM4.cpp.s
+.PHONY : impl/HBM4.s
+
+# target to generate assembly for a file
+impl/HBM4.cpp.s:
+	cd /home/zsy/LLMSimulator/build && $(MAKE) $(MAKESILENT) -f src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.s
+.PHONY : impl/HBM4.cpp.s
+
 impl/LPDDR5.o: impl/LPDDR5.cpp.o
 .PHONY : impl/LPDDR5.o
 
@@ -424,6 +448,9 @@ help:
 	@echo "... impl/HBM3.o"
 	@echo "... impl/HBM3.i"
 	@echo "... impl/HBM3.s"
+	@echo "... impl/HBM4.o"
+	@echo "... impl/HBM4.i"
+	@echo "... impl/HBM4.s"
 	@echo "... impl/LPDDR5.o"
 	@echo "... impl/LPDDR5.i"
 	@echo "... impl/LPDDR5.s"

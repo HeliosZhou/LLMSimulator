@@ -194,7 +194,10 @@ src/module/CMakeFiles/module.dir/lm_head.cpp.o: \
  /usr/include/c++/13/backward/auto_ptr.h \
  /usr/include/c++/13/pstl/glue_memory_defs.h \
  /usr/include/c++/13/pstl/execution_defs.h \
- /home/zsy/LLMSimulator/src/hardware/device.h \
+ /home/zsy/LLMSimulator/src/hardware/device.h /usr/include/c++/13/fstream \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
+ /usr/include/c++/13/bits/fstream.tcc \
  /home/zsy/LLMSimulator/src/common/type.h \
  /home/zsy/LLMSimulator/src/dram/dram_type.h \
  /home/zsy/LLMSimulator/src/dram/memory_config.h \
@@ -250,10 +253,7 @@ src/module/CMakeFiles/module.dir/lm_head.cpp.o: \
  /home/zsy/LLMSimulator/src/module/base.h \
  /home/zsy/LLMSimulator/src/model/model_config.h \
  /home/zsy/LLMSimulator/src/scheduler/sequence.h \
- /usr/include/c++/13/chrono /usr/include/c++/13/fstream \
- /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
- /usr/include/c++/13/bits/fstream.tcc /usr/include/c++/13/set \
+ /usr/include/c++/13/chrono /usr/include/c++/13/set \
  /usr/include/c++/13/bits/stl_set.h \
  /usr/include/c++/13/bits/stl_multiset.h \
  /home/zsy/LLMSimulator/src/hardware/hardware_config.h \

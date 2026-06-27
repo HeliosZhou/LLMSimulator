@@ -15,6 +15,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/HBM.cpp" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o" "gcc" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o.d"
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/HBM2.cpp" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o" "gcc" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o.d"
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/HBM3.cpp" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM3.cpp.o" "gcc" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM3.cpp.o.d"
+  "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/HBM4.cpp" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o" "gcc" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o.d"
   "/home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/LPDDR5.cpp" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/LPDDR5.cpp.o" "gcc" "src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/LPDDR5.cpp.o.d"
   )
 

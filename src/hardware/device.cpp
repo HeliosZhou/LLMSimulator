@@ -338,6 +338,23 @@ void Device::execution(LayerType layer_type,
     stats.all_write_count += dram_es.all_write_count;
     stats.ref_count += dram_es.ref_count;
     stats.memory_duration += dram_es.memory_duration;
+
+    // Accumulate per-channel traffic from accumulated delta
+    const auto& ch_acc = dram_interface->getPerChannelAccumulated();
+    if (!ch_acc.empty()) {
+      if (per_channel_traffic_.empty()) {
+        per_channel_traffic_.resize(ch_acc.size());
+      }
+      for (std::size_t ch = 0; ch < ch_acc.size() && ch < per_channel_traffic_.size(); ch++) {
+        if (per_channel_traffic_[ch].empty()) {
+          per_channel_traffic_[ch].resize(ch_acc[ch].size(), 0);
+        }
+        for (std::size_t i = 0; i < ch_acc[ch].size() && i < per_channel_traffic_[ch].size(); i++) {
+          per_channel_traffic_[ch][i] += ch_acc[ch][i];
+        }
+      }
+    }
+    dram_interface->resetPerChannelAccumulated();
   }
 }
 
@@ -476,6 +493,25 @@ void Device::initializeDRAM(int ProcessorType, DramEnergy dramEnergy) {
   dramEnergy.kBACKGROUND_power_nW_ *= num_pseudo_ch;
 
   top_module_graph->initializeDRAM(ProcessorType, dramEnergy);
+}
+
+void Device::dumpPerChannelTraffic(const std::string& path) const {
+  if (per_channel_traffic_.empty()) return;
+
+  std::ofstream ofs(path);
+  if (!ofs.is_open()) return;
+
+  // Header
+  ofs << "channel,act_count,read_count,write_count,total_commands\n";
+  for (std::size_t ch = 0; ch < per_channel_traffic_.size(); ch++) {
+    const auto& cmds = per_channel_traffic_[ch];
+    std::int64_t act = cmds.size() > 0 ? cmds[0] : 0;
+    std::int64_t read = cmds.size() > 1 ? cmds[1] : 0;
+    std::int64_t write = cmds.size() > 2 ? cmds[2] : 0;
+    std::int64_t total = act + read + write;
+    ofs << ch << "," << act << "," << read << "," << write << "," << total << "\n";
+  }
+  ofs.flush();
 }
 
 };  // namespace llm_system

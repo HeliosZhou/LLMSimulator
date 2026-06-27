@@ -12,6 +12,8 @@ __pycache__/
 experiments/**/*.csv
 experiments/**/*.yaml
 experiments/**/*.png
+experiments/**/data/sim_work/
+results_for_config_*.csv
 experiments/exp_mem_arch_dramspec/tools/DRAMSpec/
 experiments/exp_mem_arch_dramspec/tools/deps/
 experiments/exp_mem_arch_dramspec/generated/dramspec_raw/

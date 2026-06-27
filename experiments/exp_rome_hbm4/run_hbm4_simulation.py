@@ -60,7 +60,7 @@ MODEL_OPTIONS = {
 }
 
 # Batch sizes to sweep (constrained by memory capacity)
-BATCH_SIZES = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+BATCH_SIZES = [8, 16, 32, 64, 128, 256, 512, 1024]
 
 
 def seq_len_for_model(model_name: str) -> int:

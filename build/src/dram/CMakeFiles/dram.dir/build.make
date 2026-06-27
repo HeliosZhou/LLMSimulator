@@ -238,6 +238,7 @@ dram_EXTERNAL_OBJECTS = \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM3.cpp.o" \
+"/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/dummy_controller.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/generic_dram_controller.cpp.o" \
 "/home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/PIM_dram_controller.cpp.o" \
@@ -292,6 +293,7 @@ src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/i
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM3.cpp.o
+src/dram/libdram.a: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/dummy_controller.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/generic_dram_controller.cpp.o
 src/dram/libdram.a: src/dram/ramulator2/src/dram_controller/CMakeFiles/ramulator-controller.dir/impl/PIM_dram_controller.cpp.o

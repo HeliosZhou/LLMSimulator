@@ -181,6 +181,20 @@ src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM3.cpp.s: cmak
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/ramulator-dram.dir/impl/HBM3.cpp.s"
 	cd /home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/HBM3.cpp -o CMakeFiles/ramulator-dram.dir/impl/HBM3.cpp.s
 
+src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/flags.make
+src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o: /home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/HBM4.cpp
+src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/zsy/LLMSimulator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o"
+	cd /home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o -MF CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o.d -o CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o -c /home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/HBM4.cpp
+
+src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.i"
+	cd /home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/HBM4.cpp > CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.i
+
+src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.s"
+	cd /home/zsy/LLMSimulator/build/src/dram/ramulator2/src/dram && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zsy/LLMSimulator/src/dram/ramulator2/src/dram/impl/HBM4.cpp -o CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.s
+
 ramulator-dram: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR3.cpp.o
 ramulator-dram: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4.cpp.o
 ramulator-dram: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/DDR4-VRR.cpp.o
@@ -189,6 +203,7 @@ ramulator-dram: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/
 ramulator-dram: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM.cpp.o
 ramulator-dram: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM2.cpp.o
 ramulator-dram: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM3.cpp.o
+ramulator-dram: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/impl/HBM4.cpp.o
 ramulator-dram: src/dram/ramulator2/src/dram/CMakeFiles/ramulator-dram.dir/build.make
 .PHONY : ramulator-dram
 

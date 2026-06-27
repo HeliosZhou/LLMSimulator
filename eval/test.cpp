@@ -415,5 +415,11 @@ int main(int argc, char *argv[]) {
     top0->print_timeboard();
   }
 
+  // Dump per-channel traffic for LBR analysis
+  {
+    std::string per_ch_path = output_path + "/per_channel_traffic.csv";
+    cluster->get_device(0)->dumpPerChannelTraffic(per_ch_path);
+  }
+
   return 0;
 }

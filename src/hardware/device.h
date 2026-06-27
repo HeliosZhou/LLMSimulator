@@ -75,6 +75,12 @@ class Device : public std::enable_shared_from_this<Device> {
     return per_layer_type_dram_stats_;
   }
 
+  const std::vector<std::vector<std::int64_t>>& getPerChannelTraffic() const {
+    return per_channel_traffic_;
+  }
+
+  void dumpPerChannelTraffic(const std::string& path) const;
+
   time_ns get_time() { return status.device_time; }
   void set_time(time_ns time) { status.device_time = time; }
 
@@ -138,6 +144,8 @@ class Device : public std::enable_shared_from_this<Device> {
 
   bool use_ramulator;
   std::map<LayerType, LayerTypeDramStats> per_layer_type_dram_stats_;
+  // per_channel_traffic_[channel][command_type] = accumulated count
+  std::vector<std::vector<std::int64_t>> per_channel_traffic_;
   bool trace_enabled;
   std::string trace_path;
   std::ofstream trace_stream;

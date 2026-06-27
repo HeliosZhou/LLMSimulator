@@ -33,8 +33,13 @@ Ramulator::AddrVec_t MMapController::getAddrVec(addr address, long long bundle_i
     // DDR5: channel, rank, bankgroup, bank, row, column
     ramul_addr_vec = {channel,       addr_vec.rank, addr_vec.bankgroup,
                       addr_vec.bank, addr_vec.row,  addr_vec.col};
+  } else if (memory_config.num_bankgroup == 1 && memory_config.num_channel >= 32) {
+    // HBM4: 64 independent channels, no bankgroup, no pseudochannel split
+    ramul_addr_vec = {
+        channel,  0,  addr_vec.rank,
+        addr_vec.bank, addr_vec.row, addr_vec.col};
   } else {
-    // HBM: channel, pseudochannel, rank, bankgroup, bank, row, column
+    // HBM3: channel, pseudochannel, rank, bankgroup, bank, row, column
     ramul_addr_vec = {
         channel / 2,   channel % 2,  addr_vec.rank, addr_vec.bankgroup,
         addr_vec.bank, addr_vec.row, addr_vec.col};
@@ -59,8 +64,13 @@ Ramulator::AddrVec_t MMapController::getAddrVecLOGIC(addr address,
     // DDR5: channel, rank, bankgroup, bank, row, column
     ramul_addr_vec = {channel,       addr_vec.rank, addr_vec.bankgroup,
                       addr_vec.bank, addr_vec.row,  addr_vec.col};
+  } else if (memory_config.num_bankgroup == 1 && memory_config.num_channel >= 32) {
+    // HBM4: 64 independent channels, no bankgroup, no pseudochannel split
+    ramul_addr_vec = {
+        channel,  0,  addr_vec.rank,
+        addr_vec.bank, addr_vec.row, addr_vec.col};
   } else {
-    // HBM: channel, pseudochannel, rank, bankgroup, bank, row, column
+    // HBM3: channel, pseudochannel, rank, bankgroup, bank, row, column
     ramul_addr_vec = {
         channel / 2,   channel % 2,  addr_vec.rank, addr_vec.bankgroup,
         addr_vec.bank, addr_vec.row, addr_vec.col};
