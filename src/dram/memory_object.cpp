@@ -28,6 +28,11 @@ Ramulator::AddrVec_t MemoryObject::getAddrVec(long long bundle_idx,
   return addrvec;
 }
 
+addr MemoryObject::getTargetAddress(long long bundle_idx) const {
+  assertTrue(bundle_idx >= 0 && bundle_idx < num_bundle, "Invalid bundle index");
+  return address + bundle_idx * mmap_controller->getGranul();
+}
+
 void MemoryObject::setSize(long long size_) {
   size = size_;
   num_bundle = size / mmap_controller->getGranul();

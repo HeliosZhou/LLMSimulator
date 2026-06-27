@@ -178,7 +178,8 @@ Device::Device(SystemConfig config, int device_total_rank, Cluster_ptr cluster)
     memory_scale_factor = config.memory_scale_factor_override;
   }
 
-  dram_interface = DRAMInterface::Create(dram_cfg_path, memory_scale_factor);
+  dram_interface =
+      DRAMInterface::Create(dram_cfg_path, memory_scale_factor, device_total_rank);
   mmap_controller = MMapController::Create(memory_config);
   use_ramulator = config.use_ramulator;
   perform_execution = false;

@@ -12,6 +12,8 @@ struct PIMHWConfig {
 
   int bandwidth_x = 0;
   int ramulator_sample_stride = 1;
+  bool trace_all_channels = false;
+  int trace_channel_filter = 0;
 };
 
 class SystemConfig {

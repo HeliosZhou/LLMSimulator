@@ -2,6 +2,7 @@
 
 #include <list>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/type.h"
@@ -19,6 +20,9 @@ class PIMCommand {
   PIMCommandType pimcmd_type;
   PIMOperandType op_type;
   Ramulator::AddrVec_t addr_vec;
+  addr linear_addr = -1;
+  long long bundle_idx = -1;
+  double sample_scale = 1.0;
 
   PIMRequest* request = NULL;
 
@@ -49,6 +53,11 @@ class PIMRequest {
   cycle_t end = 0;
   double sample_scale = 1.0;
   DRAMRequestType dramreq_type = DRAMRequestType::kMAX;
+  LayerType trace_layer_type = LayerType::MAX;
+  ProcessorType trace_processor_type = ProcessorType::NONE;
+  std::string trace_module_name;
+  std::string trace_tensor_name;
+  std::string trace_tensor_tag;
 
   void AddCommand(PIMCommand&& pimcommand);
   std::list<PIMCommand>& GetCommand();

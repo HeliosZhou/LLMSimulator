@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -37,6 +38,21 @@ class DRAMRequest : public std::enable_shared_from_this<DRAMRequest> {
   }
 
   DRAMRequestType GetType() const { return type_; }
+  void SetTraceContext(LayerType layer_type, ProcessorType processor_type,
+                       const std::string& module_name,
+                       const std::string& tensor_name,
+                       const std::string& tensor_tag) {
+    trace_layer_type_ = layer_type;
+    trace_processor_type_ = processor_type;
+    trace_module_name_ = module_name;
+    trace_tensor_name_ = tensor_name;
+    trace_tensor_tag_ = tensor_tag;
+  }
+  LayerType GetTraceLayerType() const { return trace_layer_type_; }
+  ProcessorType GetTraceProcessorType() const { return trace_processor_type_; }
+  const std::string& GetTraceModuleName() const { return trace_module_name_; }
+  const std::string& GetTraceTensorName() const { return trace_tensor_name_; }
+  const std::string& GetTraceTensorTag() const { return trace_tensor_tag_; }
 
   ~DRAMRequest() = default;
 
@@ -48,6 +64,11 @@ class DRAMRequest : public std::enable_shared_from_this<DRAMRequest> {
   DRAMRequest(DRAMRequestType type);
 
   DRAMRequestType type_;
+  LayerType trace_layer_type_ = LayerType::MAX;
+  ProcessorType trace_processor_type_ = ProcessorType::NONE;
+  std::string trace_module_name_;
+  std::string trace_tensor_name_;
+  std::string trace_tensor_tag_;
 };
 
 }  // namespace llm_system

@@ -4,6 +4,21 @@
 namespace llm_system {
 namespace PIM_KERNEL {
 
+namespace {
+
+bool should_trace_channel(const Ramulator::AddrVec_t& addr_vec,
+                          const PIMHWConfig& pim_hw_config) {
+  if (addr_vec.empty()) {
+    return false;
+  }
+  if (pim_hw_config.trace_all_channels || pim_hw_config.trace_channel_filter < 0) {
+    return true;
+  }
+  return addr_vec.at(0) == pim_hw_config.trace_channel_filter;
+}
+
+}  // namespace
+
 void Read_kernel(PIMRequest& pim_request, DRAMRequestType dramreq_type,
                  DRAMRequest::PIM_Operand& operand,
                  const PIMHWConfig pim_hw_config) {
@@ -22,15 +37,17 @@ void Read_kernel(PIMRequest& pim_request, DRAMRequestType dramreq_type,
     long long sampled_commands = 0;
     for (int bundle_idx = 0; bundle_idx < opnd->getBundleSize(); bundle_idx++) {
         addr_vec = opnd->getAddrVec(bundle_idx, pim_hw_config.type);
-        if (addr_vec.at(0) == 0) {
+        if (should_trace_channel(addr_vec, pim_hw_config)) {
           eligible_commands++;
         }
-        if (addr_vec.at(0) == 0 &&
+        if (should_trace_channel(addr_vec, pim_hw_config) &&
             (eligible_commands - 1) % sample_stride == 0) {
           sampled_commands++;
-          pim_request.AddCommand(PIMCommand(PIMCommandType::kRead,
-                                            PIMOperandType::kDRAM, addr_vec,
-                                            &pim_request, dramreq_type));
+          PIMCommand command(PIMCommandType::kRead, PIMOperandType::kDRAM,
+                             addr_vec, &pim_request, dramreq_type);
+          command.linear_addr = opnd->getTargetAddress(bundle_idx);
+          command.bundle_idx = bundle_idx;
+          pim_request.AddCommand(std::move(command));
         }
     }
     if (sampled_commands > 0) {

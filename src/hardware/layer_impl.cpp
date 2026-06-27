@@ -15,6 +15,9 @@ ExecStatus issueRamulator(Device_Ptr device, LayerType layer_type,
   ExecStatus exec_status;
   if (!device->checkExecutionCache(exec_status, key)) {
     DRAMRequest::Ptr dram_request = DRAMRequest::Create(dram_request_type);
+    dram_request->SetTraceContext(layer_type, processor_type,
+                                  tensor->get_module_map_name(), tensor->name,
+                                  tensor->tag);
     dram_request->AddOperand(tensor->getMemoryObject(), pim_operand_type);
     device->run_ramulator(dram_request);
     exec_status = device->dram_interface->getExecStatus(); 

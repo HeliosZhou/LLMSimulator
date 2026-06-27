@@ -1,8 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include <fstream>
 #include <list>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/base.h"
@@ -28,9 +30,10 @@ class DRAMInterface {
   using Ptr = std::shared_ptr<DRAMInterface>;
 
   [[nodiscard]] DRAMInterface::Ptr static Create(
-      std::string config_path, const double memory_scale_factor) {
+      std::string config_path, const double memory_scale_factor,
+      int device_total_rank) {
     return DRAMInterface::Ptr(
-        new DRAMInterface(config_path, memory_scale_factor));
+        new DRAMInterface(config_path, memory_scale_factor, device_total_rank));
   }
 
   DRAMInterface(DRAMInterface &&) = default;
@@ -59,6 +62,8 @@ class DRAMInterface {
     pim_hw_config.type = type;
     pim_hw_config.bandwidth_x = bandwidth_x;
     pim_hw_config.ramulator_sample_stride = ramulator_sample_stride;
+    pim_hw_config.trace_all_channels = trace_all_channels_;
+    pim_hw_config.trace_channel_filter = trace_channel_filter_;
   }
 
   std::map<DRAMRequestType, std::string> dramreq_to_string = {};
@@ -81,19 +86,30 @@ class DRAMInterface {
   long mem_tick;
   long tick_mult;
   double memory_scale_factor;
+  int device_total_rank_;
 
   std::vector<std::function<pim_kernel_ptr>> kernel;
 
   DRAMInterface(std::string config_path,
-                double memory_scale_factor);
+                double memory_scale_factor, int device_total_rank);
 
   void updateStatus(const PIMRequest &pimrequest);
   void SendRequest(PIMRequest &pimrequest);
+  void initializeMappedTrace();
+  void writeMappedTraceHeader();
+  void traceMappedCommand(const PIMCommand &command,
+                          const PIMRequest &pimrequest);
 
   void StringMapInit();
 
   std::vector<DRAMRequest> dram_request_log_;
   std::vector<DRAMRequest> pim_request_log_;
+  bool mapped_trace_enabled_ = false;
+  std::string mapped_trace_path_;
+  std::ofstream mapped_trace_stream_;
+  long mapped_trace_event_id_ = 0;
+  bool trace_all_channels_ = false;
+  int trace_channel_filter_ = 0;
 };
 
 }  // namespace llm_system

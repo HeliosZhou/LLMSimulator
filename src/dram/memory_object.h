@@ -36,6 +36,8 @@ class MemoryObject {
   Ramulator::AddrVec_t getAddrVec(long long bundle_idx,
                                   ProcessorType type = ProcessorType::GPU);
   long getBundleSize() { return num_bundle; }
+  addr getBaseAddress() const { return address; }
+  addr getTargetAddress(long long bundle_idx) const;
 
   void setSize(long long _size);
 
