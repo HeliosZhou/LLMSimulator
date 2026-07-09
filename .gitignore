@@ -8,7 +8,6 @@ __pycache__/
 *.py[cod]
 
 # LLMSimulator experiment outputs
-# LLMSimulator experiment outputs
 experiments/**/*.csv
 experiments/**/*.yaml
 experiments/**/*.png
@@ -17,3 +16,13 @@ results_for_config_*.csv
 experiments/exp_mem_arch_dramspec/tools/DRAMSpec/
 experiments/exp_mem_arch_dramspec/tools/deps/
 experiments/exp_mem_arch_dramspec/generated/dramspec_raw/
+build/src/dram/CMakeFiles/dram.dir
+
+# Generated trace bundles and analysis outputs
+artifacts/trace_bundle/**
+!artifacts/trace_bundle/**/
+!artifacts/trace_bundle/**/rowrisk_analysis/plot.py
+
+# Ad hoc generated CSV outputs
+data/*_ramul_decode.csv
+data/per_channel_traffic.csv
